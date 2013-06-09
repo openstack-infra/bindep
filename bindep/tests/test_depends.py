@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import subprocess
+
+import mox
+from testtools.matchers import Contains
 from testtools import TestCase
 
 from bindep.depends import Depends
@@ -29,3 +33,25 @@ class TestFactory(TestCase):
     def test_platform_profiles_succeeds(self):
         depends = Depends("")
         self.assertIsInstance(depends.platform_profiles(), list)
+
+    def _mock_lsb(self):
+        mocker = mox.Mox()
+        mocker.StubOutWithMock(subprocess, "check_output")
+        subprocess.check_output(
+            ["lsb_release", "-si"],
+            stderr=subprocess.STDOUT).AndReturn("Ubuntu\n")
+        mocker.ReplayAll()
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)
+
+    def test_detects_ubuntu(self):
+        self._mock_lsb()
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:ubuntu"))
+
+    def test_ubuntu_implies_dpkg(self):
+        self._mock_lsb()
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:dpkg"))

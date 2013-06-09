@@ -22,7 +22,8 @@ import sys
 from bindep.depends import Depends
 
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(msg)s")
+logging.basicConfig(
+    stream=sys.stdout, level=logging.INFO, format="%(message)s")
 
 
 def main(depfactory=None):

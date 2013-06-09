@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import subprocess
+
 
 class Depends(object):
     """Project dependencies."""
@@ -31,4 +33,9 @@ class Depends(object):
         return []
 
     def platform_profiles(self):
-        return []
+        distro = subprocess.check_output(
+            ["lsb_release", "-si"], stderr=subprocess.STDOUT).strip().lower()
+        atoms = set([distro])
+        if distro in ["debian", "ubuntu"]:
+            atoms.add("dpkg")
+        return ["platform:%s" % (atom,) for atom in sorted(atoms)]
