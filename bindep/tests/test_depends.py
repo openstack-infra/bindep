@@ -85,3 +85,22 @@ class TestDepends(TestCase):
         self.assertEqual(
             [("foo", [], [('<=', '1'), ('!=', '2')])],
             depends._rules)
+
+    def test_no_selector_active(self):
+        depends = Depends("foo\n")
+        self.assertEqual([("foo", [], [])], depends.active_rules(["default"]))
+
+    def test_negative_selector_removes_rule(self):
+        depends = Depends("foo [!off]\n")
+        self.assertEqual([], depends.active_rules(["on", "off"]))
+
+    def test_positive_selector_includes_rule(self):
+        depends = Depends("foo [on]\n")
+        self.assertEqual(
+            [("foo", [(True, "on")], [])],
+            depends.active_rules(["on", "off"]))
+
+    def test_positive_selector_not_in_profiles_inactive(self):
+        depends = Depends("foo [on]\n")
+        self.assertEqual([], depends.active_rules(["default"]))
+

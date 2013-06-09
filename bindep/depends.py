@@ -52,6 +52,34 @@ class Depends(object):
         parser = makeGrammar(grammar, {})(depends_string)
         self._rules = parser.rules()
 
+    def active_rules(self, profiles):
+        """Return the rules active given profiles.
+
+        :param profiles: A list of profiles to consider active. This should
+            include platform profiles - they are not automatically included.
+        """
+        profiles = set(profiles)
+        result = []
+        for rule in self._rules:
+            # Have we seen any positive selectors - if not, the absence of
+            # negatives means we include the rule, but if we any positive
+            # selectors we need a match.
+            positive = False
+            match_found = False
+            negative = False
+            for sense, profile in rule[1]:
+                if sense:
+                    positive = True
+                    if profile in profiles:
+                        match_found = True
+                else:
+                    if profile in profiles:
+                        negative = True
+                        break
+            if not negative and (match_found or not positive):
+                result.append(rule)
+        return result
+
     def profiles(self):
         profiles = set()
         for rule in self._rules:
