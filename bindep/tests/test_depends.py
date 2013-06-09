@@ -16,9 +16,12 @@
 # limitations under the License.
 
 import subprocess
+from textwrap import dedent
 
 import mox
 from testtools.matchers import Contains
+from testtools.matchers import Equals
+from testtools.matchers import MatchesSetwise
 from testtools import TestCase
 
 from bindep.depends import Depends
@@ -55,3 +58,14 @@ class TestDepends(TestCase):
         depends = Depends("")
         self.assertThat(
             depends.platform_profiles(), Contains("platform:dpkg"))
+
+    def test_finds_profiles(self):
+        depends = Depends(dedent("""\
+            foo
+            bar [something]
+            quux [anotherthing !nothing] <=12
+            """))
+        self.assertThat(
+            depends.profiles(),
+            MatchesSetwise(*map(
+                Equals, ["something", "anotherthing", "nothing"])))

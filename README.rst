@@ -72,7 +72,7 @@ those three profiles but not ``mysql``. ``[platform:rhel]`` will match only
 when running in a RHEL linux environment.
 
 Version constraints are a comma separated list of constraints where each
-constraint is  (== | < | <= | >= | > | ><) VERSION, and the constraints are ANDed
+constraint is  (== | < | <= | >= | > | !=) VERSION, and the constraints are ANDed
 together (the same as pip requirements version constraints).
 
 Developing bindep
