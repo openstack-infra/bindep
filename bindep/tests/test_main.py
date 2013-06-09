@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import os
+from textwrap import dedent
 
 from fixtures import FakeLogger
 from fixtures import Fixture
@@ -42,6 +43,25 @@ class MainFixture(Fixture):
 
 
 class TestMain(TestCase):
+
+    def test_profiles_lists_profiles(self):
+        logger = self.useFixture(FakeLogger())
+        self.useFixture(MonkeyPatch('sys.argv', ['bindep', '--profiles']))
+        class TestFactory:
+            def platform_profiles(self):
+                return ['platform:ubuntu', 'platform:i386']
+            def profiles(self):
+                return ['bar', 'foo']
+        self.assertEqual(0, main(depfactory=TestFactory))
+        self.assertEqual(dedent("""\
+            Platform profiles:
+            platform:ubuntu
+            platform:i386
+
+            Configuration profiles:
+            bar
+            foo
+            """), logger.output)
 
     def test_missing_requirements_file(self):
         fixture = self.useFixture(MainFixture())

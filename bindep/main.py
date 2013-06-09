@@ -16,15 +16,31 @@
 # limitations under the License.
 
 import logging
+import optparse
 import sys
 
 
-def main():
-    try:
-        open('other-requirements.txt', 'rt')
-    except IOError:
-        logging.error('No other-requirements.txt file found.')
-        return 1
+def main(depfactory=None):
+    if depfactory is None:
+        try:
+            open('other-requirements.txt', 'rt')
+        except IOError:
+            logging.error('No other-requirements.txt file found.')
+            return 1
+    else:
+        depends = depfactory()
+    parser = optparse.OptionParser()
+    parser.add_option("--profiles", action="store_true",
+        help="List the platform and configuration profiles.")
+    opts, args = parser.parse_args()
+    if opts.profiles:
+        logging.info("Platform profiles:")
+        for profile in depends.platform_profiles():
+            logging.info("%s", profile)
+        logging.info("")
+        logging.info("Configuration profiles:")
+        for profile in depends.profiles():
+            logging.info("%s", profile)
     return 0
 
 
