@@ -19,18 +19,25 @@ import logging
 import optparse
 import sys
 
+from bindep.depends import Depends
+
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(msg)s")
+
 
 def main(depfactory=None):
     if depfactory is None:
         try:
-            open('other-requirements.txt', 'rt')
+            content = open('other-requirements.txt', 'rt').read()
         except IOError:
             logging.error('No other-requirements.txt file found.')
             return 1
+        depends = Depends(content)
     else:
         depends = depfactory()
     parser = optparse.OptionParser()
-    parser.add_option("--profiles", action="store_true",
+    parser.add_option(
+        "--profiles", action="store_true",
         help="List the platform and configuration profiles.")
     opts, args = parser.parse_args()
     if opts.profiles:

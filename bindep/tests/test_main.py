@@ -47,9 +47,11 @@ class TestMain(TestCase):
     def test_profiles_lists_profiles(self):
         logger = self.useFixture(FakeLogger())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep', '--profiles']))
+
         class TestFactory:
             def platform_profiles(self):
                 return ['platform:ubuntu', 'platform:i386']
+
             def profiles(self):
                 return ['bar', 'foo']
         self.assertEqual(0, main(depfactory=TestFactory))
