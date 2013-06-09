@@ -69,3 +69,19 @@ class TestDepends(TestCase):
             depends.profiles(),
             MatchesSetwise(*map(
                 Equals, ["something", "anotherthing", "nothing"])))
+
+    def test_empty_rules(self):
+        depends = Depends("")
+        self.assertEqual([], depends._rules)
+
+    def test_selectors(self):
+        depends = Depends("foo [!bar baz quux]\n")
+        self.assertEqual(
+            [("foo", [(False, "bar"), (True, "baz"), (True, "quux")], [])],
+            depends._rules)
+
+    def test_versions(self):
+        depends = Depends("foo <=1,!=2\n")
+        self.assertEqual(
+            [("foo", [], [('<=', '1'), ('!=', '2')])],
+            depends._rules)
