@@ -1,3 +1,5 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
 # Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,5 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import sys
+
+
 def main():
-    pass
+    try:
+        open('other-requirements.txt', 'rt')
+    except IOError:
+        logging.error('No other-requirements.txt file found.')
+        return 1
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
