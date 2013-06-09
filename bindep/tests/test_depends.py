@@ -24,7 +24,7 @@ from testtools import TestCase
 from bindep.depends import Depends
 
 
-class TestFactory(TestCase):
+class TestDepends(TestCase):
 
     def test_empty_file(self):
         depends = Depends("")
