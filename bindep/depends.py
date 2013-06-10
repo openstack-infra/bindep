@@ -80,6 +80,14 @@ class Depends(object):
                 result.append(rule)
         return result
 
+    def check_rules(self, rules):
+        """Evaluate rules against the local environment.
+
+        :param rules: A list of rules, as returned by active_rules.
+        :return: A list of unsatisfied rules.
+        """
+        return []
+
     def profiles(self):
         profiles = set()
         for rule in self._rules:

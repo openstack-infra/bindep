@@ -88,10 +88,47 @@ class TestMain(TestCase):
         mocker = mox.Mox()
         depends = mocker.CreateMock(Depends)
         depends.platform_profiles().AndReturn(["platform:ubuntu"])
-        depends.active_rules(["myprofile", "platform:ubuntu"]).AndReturn([])
+        depends.active_rules(["myprofile", "platform:ubuntu"]).AndReturn([""])
+        depends.check_rules([""]).AndReturn([])
         mocker.ReplayAll()
         self.assertEqual(0, main(depends=depends))
-        self.assertEqual(dedent(""), logger.output)
+        self.assertEqual("", logger.output)
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)
+
+    def test_default_profile(self):
+        logger = self.useFixture(FakeLogger())
+        self.useFixture(MonkeyPatch('sys.argv', ['bindep']))
+        mocker = mox.Mox()
+        depends = mocker.CreateMock(Depends)
+        depends.platform_profiles().AndReturn(["platform:ubuntu"])
+        depends.active_rules(["default", "platform:ubuntu"]).AndReturn(["A"])
+        depends.check_rules(["A"]).AndReturn([])
+        mocker.ReplayAll()
+        self.assertEqual(0, main(depends=depends))
+        self.assertEqual("", logger.output)
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)
+
+    def test_errors_shown(self):
+        logger = self.useFixture(FakeLogger())
+        self.useFixture(MonkeyPatch('sys.argv', ['bindep']))
+        mocker = mox.Mox()
+        depends = mocker.CreateMock(Depends)
+        depends.platform_profiles().AndReturn([])
+        depends.active_rules(["default"]).AndReturn([])
+        depends.check_rules([]).AndReturn(
+            [('missing', ['foo', 'bar']),
+             ('badversion', [('quux', '<=12', '13'), ('qaaz', '!=10', '10')])])
+        mocker.ReplayAll()
+        self.assertEqual(1, main(depends=depends))
+        self.assertEqual(dedent("""\
+            Missing packages:
+                foo bar
+            Bad versions of installed packages:
+                quux version 13 does not match <=12
+                qaaz version 10 does not match !=10
+            """), logger.output)
         self.addCleanup(mocker.VerifyAll)
         self.addCleanup(mocker.UnsetStubs)
 

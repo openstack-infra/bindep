@@ -48,8 +48,25 @@ def main(depends=None):
         for profile in depends.profiles():
             logging.info("%s", profile)
     else:
-        profiles = args + depends.platform_profiles()
+        if args:
+            profiles = args
+        else:
+            profiles = ["default"]
+        profiles = profiles + depends.platform_profiles()
         rules = depends.active_rules(profiles)
+        errors = depends.check_rules(rules)
+        for error in errors:
+            if error[0] == 'missing':
+                logging.info("Missing packages:")
+                logging.info("    %s", " ".join(error[1]))
+            if error[0] == 'badversion':
+                logging.info("Bad versions of installed packages:")
+                for pkg, constraint, version in error[1]:
+                    logging.info(
+                        "    %s version %s does not match %s",
+                        pkg, version, constraint)
+        if errors:
+            return 1
     return 0
 
 
