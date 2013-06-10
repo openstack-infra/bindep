@@ -26,16 +26,14 @@ logging.basicConfig(
     stream=sys.stdout, level=logging.INFO, format="%(message)s")
 
 
-def main(depfactory=None):
-    if depfactory is None:
+def main(depends=None):
+    if depends is None:
         try:
             content = open('other-requirements.txt', 'rt').read()
         except IOError:
             logging.error('No other-requirements.txt file found.')
             return 1
         depends = Depends(content)
-    else:
-        depends = depfactory()
     parser = optparse.OptionParser()
     parser.add_option(
         "--profiles", action="store_true",
@@ -49,6 +47,9 @@ def main(depfactory=None):
         logging.info("Configuration profiles:")
         for profile in depends.profiles():
             logging.info("%s", profile)
+    else:
+        profiles = args + depends.platform_profiles()
+        rules = depends.active_rules(profiles)
     return 0
 
 

@@ -22,8 +22,10 @@ from fixtures import FakeLogger
 from fixtures import Fixture
 from fixtures import MonkeyPatch
 from fixtures import TempDir
+import mox
 from testtools import TestCase
 
+from bindep.depends import Depends
 from bindep.main import main
 
 
@@ -54,7 +56,7 @@ class TestMain(TestCase):
 
             def profiles(self):
                 return ['bar', 'foo']
-        self.assertEqual(0, main(depfactory=TestFactory))
+        self.assertEqual(0, main(depends=TestFactory()))
         self.assertEqual(dedent("""\
             Platform profiles:
             platform:ubuntu
@@ -79,4 +81,17 @@ class TestMain(TestCase):
             pass
         self.assertEqual(0, main())
         self.assertEqual('', fixture.logger.output)
+
+    def test_specific_profile(self):
+        logger = self.useFixture(FakeLogger())
+        self.useFixture(MonkeyPatch('sys.argv', ['bindep', 'myprofile']))
+        mocker = mox.Mox()
+        depends = mocker.CreateMock(Depends)
+        depends.platform_profiles().AndReturn(["platform:ubuntu"])
+        depends.active_rules(["myprofile", "platform:ubuntu"]).AndReturn([])
+        mocker.ReplayAll()
+        self.assertEqual(0, main(depends=depends))
+        self.assertEqual(dedent(""), logger.output)
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)
 
