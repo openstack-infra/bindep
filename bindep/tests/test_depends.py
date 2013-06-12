@@ -24,9 +24,9 @@ from testtools.matchers import Equals
 from testtools.matchers import MatchesSetwise
 from testtools import TestCase
 
+from bindep.depends import _eval
 from bindep.depends import Depends
 from bindep.depends import Dpkg
-from bindep.depends import _eval
 from bindep.depends import Platform
 
 

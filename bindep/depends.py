@@ -18,12 +18,17 @@
 from parsley import makeGrammar
 import subprocess
 
+if not getattr(subprocess, 'check_output', None):
+    import bindep.support_py26
+    # shut pyflakes up.
+    bindep.support_py26
+
 
 debversion_grammar = """
 epoch = <digit+>:d ':' -> d
 trailingdeb = (upstream_segment* '-' debver)
 upstream_segment = (letterOrDigit | '.' | '+' | '~' | ':')
-upstreamver = digit (upstream_segment | ('-' ~~trailingdeb))* 
+upstreamver = digit (upstream_segment | ('-' ~~trailingdeb))*
 upstreamver_no_hyphen = digit (letterOrDigit | '.' | '+' | '~' | ':')*
 debver = (letterOrDigit | '.' | '+' | '~')+
 upstream_no_hyphen = epoch?:e <upstreamver_no_hyphen>:u -> (e or '0', u, "")
@@ -203,7 +208,7 @@ def _to_ord(character):
     # ord('-') -> 45
     # ord('.') -> 46
     # ord(':') -> 58
-    if not character or character.isdigit(): # end of a part
+    if not character or character.isdigit():  # end of a part
         return 1
     elif character == '~':
         return 0
@@ -211,7 +216,7 @@ def _to_ord(character):
         ordinal = ord(character)
         if ordinal < 65:
             # Shift non-characters up beyond the highest character.
-            ordinal+= 100
+            ordinal += 100
         return ordinal
 
 
@@ -232,7 +237,7 @@ def _find_int(a_str, offset):
     while offset < len(a_str):
         offset += 1
         try:
-            result = int(a_str[initial_offset:offset])
+            int(a_str[initial_offset:offset])
         except ValueError:
             # past the end of the decimal bit
             offset -= 1
@@ -261,8 +266,8 @@ def _cmp_segment(l_str, r_str):
     r_offset = 0
     l_offset = 0
     while (r_offset < len(r_str)) or (l_offset < len(l_str)):
-        r_char = r_str[r_offset:r_offset+1]
-        l_char = l_str[l_offset:l_offset+1]
+        r_char = r_str[r_offset:r_offset + 1]
+        l_char = l_str[l_offset:l_offset + 1]
         if ((not r_char or r_char.isdigit())
             and (not l_char or l_char.isdigit())):
             l_int, l_offset = _find_int(l_str, l_offset)
