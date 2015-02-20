@@ -28,6 +28,7 @@ from bindep.depends import _eval
 from bindep.depends import Depends
 from bindep.depends import Dpkg
 from bindep.depends import Platform
+from bindep.depends import Rpm
 
 
 class TestDepends(TestCase):
@@ -40,24 +41,37 @@ class TestDepends(TestCase):
         depends = Depends("")
         self.assertIsInstance(depends.platform_profiles(), list)
 
-    def _mock_lsb(self):
+    def _mock_lsb(self, platform):
         mocker = mox.Mox()
         mocker.StubOutWithMock(subprocess, "check_output")
         subprocess.check_output(
             ["lsb_release", "-si"],
-            stderr=subprocess.STDOUT).AndReturn("Ubuntu\n")
+            stderr=subprocess.STDOUT).AndReturn("%s\n" % platform)
         mocker.ReplayAll()
         self.addCleanup(mocker.VerifyAll)
         self.addCleanup(mocker.UnsetStubs)
 
+    def test_detects_centos(self):
+        self._mock_lsb("CentOS")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:centos"))
+
     def test_detects_ubuntu(self):
-        self._mock_lsb()
+        self._mock_lsb("Ubuntu")
         depends = Depends("")
         self.assertThat(
             depends.platform_profiles(), Contains("platform:ubuntu"))
 
+    def test_centos_implies_rpm(self):
+        self._mock_lsb("CentOS")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:rpm"))
+        self.assertIsInstance(depends.platform, Rpm)
+
     def test_ubuntu_implies_dpkg(self):
-        self._mock_lsb()
+        self._mock_lsb("Ubuntu")
         depends = Depends("")
         self.assertThat(
             depends.platform_profiles(), Contains("platform:dpkg"))
@@ -183,6 +197,42 @@ class TestDpkg(TestCase):
         self.addCleanup(mocker.VerifyAll)
         self.addCleanup(mocker.UnsetStubs)
         self.assertEqual("4.0.0-0ubuntu1", platform.get_pkg_version("foo"))
+
+
+class TestRpm(TestCase):
+
+    # NOTE: test_not_installed is not implemented as rpm seems to only be aware
+    # of installed packages
+
+    def test_unknown_package(self):
+        platform = Rpm()
+        mocker = mox.Mox()
+        mocker.StubOutWithMock(subprocess, "check_output")
+        subprocess.check_output(
+            ["rpm", "--qf",
+             "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
+             "foo"],
+            stderr=subprocess.STDOUT).AndRaise(
+                subprocess.CalledProcessError(
+                    1, [], "package foo is not installed\n"))
+        mocker.ReplayAll()
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)
+        self.assertEqual(None, platform.get_pkg_version("foo"))
+
+    def test_installed_version(self):
+        platform = Rpm()
+        mocker = mox.Mox()
+        mocker.StubOutWithMock(subprocess, "check_output")
+        subprocess.check_output(
+            ["rpm", "--qf",
+             "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
+             "foo"],
+            stderr=subprocess.STDOUT).AndReturn("foo 4.0.0-0.el6\n")
+        mocker.ReplayAll()
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)
+        self.assertEqual("4.0.0-0.el6", platform.get_pkg_version("foo"))
 
 
 class TestEval(TestCase):
