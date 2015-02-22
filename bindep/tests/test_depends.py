@@ -231,4 +231,3 @@ class TestEval(TestCase):
         self.assertEqual(False, _eval("3.5-ubuntu", ">=", "4"))
         self.assertEqual(True, _eval("4", ">=", "3.5-ubuntu"))
         self.assertEqual(True, _eval("4", ">=", "4"))
-

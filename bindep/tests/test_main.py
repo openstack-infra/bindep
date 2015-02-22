@@ -131,4 +131,3 @@ class TestMain(TestCase):
             """), logger.output)
         self.addCleanup(mocker.VerifyAll)
         self.addCleanup(mocker.UnsetStubs)
-
