@@ -67,7 +67,7 @@ class TestMain(TestCase):
             foo
             """), logger.output)
 
-    def test_missing_requirements_file(self):
+    def test_missing_default_requirements_file(self):
         fixture = self.useFixture(MainFixture())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep']))
         self.assertEqual(1, main())
@@ -81,6 +81,24 @@ class TestMain(TestCase):
             pass
         self.assertEqual(0, main())
         self.assertEqual('', fixture.logger.output)
+
+    def test_specific_requirements_file(self):
+        fixture = self.useFixture(MainFixture())
+        self.useFixture(MonkeyPatch('sys.argv', [
+            'bindep', '--file', 'alternative-requirements.txt']))
+        with open(fixture.path + '/alternative-requirements.txt', 'wt'):
+            pass
+        self.assertEqual(0, main())
+        self.assertEqual('', fixture.logger.output)
+
+    def test_missing_specific_requirements_file(self):
+        fixture = self.useFixture(MainFixture())
+        self.useFixture(MonkeyPatch('sys.argv', [
+            'bindep', '--file', 'alternative-requirements.txt']))
+        self.assertEqual(1, main())
+        self.assertEqual(
+            'No alternative-requirements.txt file found.\n',
+            fixture.logger.output)
 
     def test_specific_profile(self):
         logger = self.useFixture(FakeLogger())
