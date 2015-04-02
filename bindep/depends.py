@@ -161,7 +161,8 @@ class Dpkg(Platform):
                  pkg_name], stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             if (e.returncode == 1 and
-                e.output.startswith('dpkg-query: no packages found')):
+                (e.output.startswith('dpkg-query: no packages found') or
+                 e.output.startswith('No packages found matching'))):
                 return None
             raise
         # output looks like
