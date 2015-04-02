@@ -147,7 +147,7 @@ class TestDpkg(TestCase):
         mocker.StubOutWithMock(subprocess, "check_output")
         subprocess.check_output(
             ["dpkg-query", "-W", "-f",
-             "${binary:Package} ${Status} ${Version}\n", "foo"],
+             "${Package} ${Status} ${Version}\n", "foo"],
             stderr=subprocess.STDOUT).AndReturn(
                 "foo deinstall ok config-files 4.0.0-0ubuntu1\n")
         mocker.ReplayAll()
@@ -161,7 +161,7 @@ class TestDpkg(TestCase):
         mocker.StubOutWithMock(subprocess, "check_output")
         subprocess.check_output(
             ["dpkg-query", "-W", "-f",
-             "${binary:Package} ${Status} ${Version}\n", "foo"],
+             "${Package} ${Status} ${Version}\n", "foo"],
             stderr=subprocess.STDOUT).AndRaise(
                 subprocess.CalledProcessError(
                     1, [], "dpkg-query: no packages found matching foo\n"))
@@ -176,7 +176,7 @@ class TestDpkg(TestCase):
         mocker.StubOutWithMock(subprocess, "check_output")
         subprocess.check_output(
             ["dpkg-query", "-W", "-f",
-             "${binary:Package} ${Status} ${Version}\n", "foo"],
+             "${Package} ${Status} ${Version}\n", "foo"],
             stderr=subprocess.STDOUT).AndReturn(
                 "foo install ok installed 4.0.0-0ubuntu1\n")
         mocker.ReplayAll()
