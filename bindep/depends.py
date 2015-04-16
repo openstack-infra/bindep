@@ -137,7 +137,7 @@ class Depends(object):
         if distro in ["debian", "ubuntu"]:
             atoms.add("dpkg")
             self.platform = Dpkg()
-        elif distro in ["centos"]:
+        elif distro in ["centos", "fedora"]:
             atoms.add("rpm")
             self.platform = Rpm()
         return ["platform:%s" % (atom,) for atom in sorted(atoms)]

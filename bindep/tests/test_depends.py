@@ -58,6 +58,12 @@ class TestDepends(TestCase):
         self.assertThat(
             depends.platform_profiles(), Contains("platform:centos"))
 
+    def test_detects_fedora(self):
+        self._mock_lsb("Fedora")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:fedora"))
+
     def test_detects_ubuntu(self):
         self._mock_lsb("Ubuntu")
         depends = Depends("")
@@ -84,6 +90,13 @@ class TestDepends(TestCase):
 
     def test_centos_implies_rpm(self):
         self._mock_lsb("CentOS")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:rpm"))
+        self.assertIsInstance(depends.platform, Rpm)
+
+    def test_fedora_implies_rpm(self):
+        self._mock_lsb("Fedora")
         depends = Depends("")
         self.assertThat(
             depends.platform_profiles(), Contains("platform:rpm"))
