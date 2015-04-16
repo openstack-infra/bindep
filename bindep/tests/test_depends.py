@@ -45,8 +45,9 @@ class TestDepends(TestCase):
         mocker = mox.Mox()
         mocker.StubOutWithMock(subprocess, "check_output")
         subprocess.check_output(
-            ["lsb_release", "-si"],
-            stderr=subprocess.STDOUT).AndReturn("%s\n" % platform)
+            ["lsb_release", "-cirs"],
+            stderr=subprocess.STDOUT).AndReturn("%s\n14.04\ntrusty\n"
+                                                % platform)
         mocker.ReplayAll()
         self.addCleanup(mocker.VerifyAll)
         self.addCleanup(mocker.UnsetStubs)
@@ -62,6 +63,24 @@ class TestDepends(TestCase):
         depends = Depends("")
         self.assertThat(
             depends.platform_profiles(), Contains("platform:ubuntu"))
+
+    def test_detects_release(self):
+        self._mock_lsb("Ubuntu")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:ubuntu-14"))
+
+    def test_detects_subrelease(self):
+        self._mock_lsb("Ubuntu")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:ubuntu-14.04"))
+
+    def test_detects_codename(self):
+        self._mock_lsb("Ubuntu")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:ubuntu-trusty"))
 
     def test_centos_implies_rpm(self):
         self._mock_lsb("CentOS")

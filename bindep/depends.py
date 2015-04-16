@@ -127,9 +127,13 @@ class Depends(object):
         return sorted(profiles)
 
     def platform_profiles(self):
-        distro = subprocess.check_output(
-            ["lsb_release", "-si"], stderr=subprocess.STDOUT).strip().lower()
+        distro, release, codename = subprocess.check_output(
+            ["lsb_release", "-cirs"], stderr=subprocess.STDOUT).lower().split()
         atoms = set([distro])
+        atoms.add("%s-%s" % (distro, codename))
+        releasebits = release.split(".")
+        for i in range(len(releasebits)):
+            atoms.add("%s-%s" % (distro, ".".join(releasebits[:i + 1])))
         if distro in ["debian", "ubuntu"]:
             atoms.add("dpkg")
             self.platform = Dpkg()
