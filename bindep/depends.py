@@ -163,8 +163,7 @@ class Dpkg(Platform):
     def get_pkg_version(self, pkg_name):
         try:
             output = subprocess.check_output(
-                ["dpkg-query", "-W", "-f",
-                 "${binary:Package} ${Status} ${Version}\n",
+                ["dpkg-query", "-W", "-f", "${Package} ${Status} ${Version}\n",
                  pkg_name], stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             if (e.returncode == 1 and
