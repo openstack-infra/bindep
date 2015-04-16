@@ -27,18 +27,22 @@ logging.basicConfig(
 
 
 def main(depends=None):
-    if depends is None:
-        try:
-            content = open('other-requirements.txt', 'rt').read()
-        except IOError:
-            logging.error('No other-requirements.txt file found.')
-            return 1
-        depends = Depends(content)
     parser = optparse.OptionParser()
+    parser.add_option(
+        "-f", "--file", action="store", type="string", dest="filename",
+        default="other-requirements.txt",
+        help="Package list file (default: other-requirements.txt).")
     parser.add_option(
         "--profiles", action="store_true",
         help="List the platform and configuration profiles.")
     opts, args = parser.parse_args()
+    if depends is None:
+        try:
+            content = open(opts.filename, 'rt').read()
+        except IOError:
+            logging.error('No %s file found.' % opts.filename)
+            return 1
+        depends = Depends(content)
     if opts.profiles:
         logging.info("Platform profiles:")
         for profile in depends.platform_profiles():
