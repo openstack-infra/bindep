@@ -149,3 +149,22 @@ class TestMain(TestCase):
             """), logger.output)
         self.addCleanup(mocker.VerifyAll)
         self.addCleanup(mocker.UnsetStubs)
+
+    def test_brief_mode(self):
+        logger = self.useFixture(FakeLogger())
+        self.useFixture(MonkeyPatch('sys.argv', ['bindep', '--brief']))
+        mocker = mox.Mox()
+        depends = mocker.CreateMock(Depends)
+        depends.platform_profiles().AndReturn([])
+        depends.active_rules(["default"]).AndReturn([])
+        depends.check_rules([]).AndReturn(
+            [('missing', ['foo', 'bar']),
+             ('badversion', [('quux', '<=12', '13'), ('qaaz', '!=10', '10')])])
+        mocker.ReplayAll()
+        self.assertEqual(1, main(depends=depends))
+        self.assertEqual(dedent("""\
+            foo
+            bar
+            """), logger.output)
+        self.addCleanup(mocker.VerifyAll)
+        self.addCleanup(mocker.UnsetStubs)

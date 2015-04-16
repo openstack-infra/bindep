@@ -29,6 +29,9 @@ logging.basicConfig(
 def main(depends=None):
     parser = optparse.OptionParser()
     parser.add_option(
+        "-b", "--brief", action="store_true", dest="brief",
+        help="List only missing packages one per line.")
+    parser.add_option(
         "-f", "--file", action="store", type="string", dest="filename",
         default="other-requirements.txt",
         help="Package list file (default: other-requirements.txt).")
@@ -61,14 +64,18 @@ def main(depends=None):
         errors = depends.check_rules(rules)
         for error in errors:
             if error[0] == 'missing':
-                logging.info("Missing packages:")
-                logging.info("    %s", " ".join(error[1]))
+                if opts.brief:
+                    logging.info("%s", "\n".join(error[1]))
+                else:
+                    logging.info("Missing packages:")
+                    logging.info("    %s", " ".join(error[1]))
             if error[0] == 'badversion':
-                logging.info("Bad versions of installed packages:")
-                for pkg, constraint, version in error[1]:
-                    logging.info(
-                        "    %s version %s does not match %s",
-                        pkg, version, constraint)
+                if not opts.brief:
+                    logging.info("Bad versions of installed packages:")
+                    for pkg, constraint, version in error[1]:
+                        logging.info(
+                            "    %s version %s does not match %s",
+                            pkg, version, constraint)
         if errors:
             return 1
     return 0
