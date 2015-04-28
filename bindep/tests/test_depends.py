@@ -19,6 +19,7 @@ import subprocess
 from textwrap import dedent
 
 import mox
+import ometa.runtime
 from testtools.matchers import Contains
 from testtools.matchers import Equals
 from testtools.matchers import MatchesSetwise
@@ -183,6 +184,17 @@ class TestDepends(TestCase):
         self.assertEqual(
             [('badversion', [('foo', "!=123", "123")])],
             depends.check_rules([("foo", [], [("!=", "123")])]))
+
+    def test_parser_patterns(self):
+        Depends(dedent("""\
+            foo
+            bar [something]
+            quux [anotherthing !nothing] <=12
+            """))
+
+    def test_parser_invalid(self):
+        self.assertRaises(ometa.runtime.ParseError,
+                          lambda: Depends("foo [platform:bar@baz]\n"))
 
 
 class TestDpkg(TestCase):
