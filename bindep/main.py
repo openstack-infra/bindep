@@ -19,7 +19,7 @@ import logging
 import optparse
 import sys
 
-from bindep.depends import Depends
+import bindep.depends
 
 
 logging.basicConfig(
@@ -27,7 +27,7 @@ logging.basicConfig(
 
 
 def main(depends=None):
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(version="%%prog %s" % bindep.version)
     parser.add_option(
         "-b", "--brief", action="store_true", dest="brief",
         help="List only missing packages one per line.")
@@ -45,7 +45,7 @@ def main(depends=None):
         except IOError:
             logging.error('No %s file found.' % opts.filename)
             return 1
-        depends = Depends(content)
+        depends = bindep.depends.Depends(content)
     if opts.profiles:
         logging.info("Platform profiles:")
         for profile in depends.platform_profiles():
