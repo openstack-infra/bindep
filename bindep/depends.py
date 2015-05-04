@@ -47,7 +47,7 @@ lowercase = ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'
             |'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z')
 name = letterOrDigit:start (letterOrDigit|'.'|'+'|'-')+:rest
 ws = ' '+
-profile = ('!'?:neg <(lowercase|digit|':')+>:name) -> (neg!='!', name)
+profile = ('!'?:neg <(lowercase|digit|':'|'-')+>:name) -> (neg!='!', name)
 selector = ws '[' profile:p1 (ws profile)*:p2 ']' -> [p1] + p2
 oneversion = <('<=' | '<' | '!=' | '==' | '>=' | '>')>:rel <debversion>:v -> (
     rel, v)
