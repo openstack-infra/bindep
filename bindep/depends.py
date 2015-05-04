@@ -45,7 +45,7 @@ rule = <name>:name selector?:selector version?:version '\n' -> (
     name, selector or [], version or [])
 lowercase = ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'
             |'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z')
-name = (lowercase|digit):start (lowercase|digit|'.'|'+'|'-')+:rest
+name = letterOrDigit:start (letterOrDigit|'.'|'+'|'-')+:rest
 ws = ' '+
 profile = ('!'?:neg <(lowercase|digit|':')+>:name) -> (neg!='!', name)
 selector = ws '[' profile:p1 (ws profile)*:p2 ']' -> [p1] + p2
