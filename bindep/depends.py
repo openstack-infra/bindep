@@ -40,8 +40,8 @@ debversion_compiled = makeGrammar(debversion_grammar, {})
 
 
 grammar = debversion_grammar + """
-rules = rule*
-rule = <name>:name selector?:selector version?:version '\n' -> (
+rules = (rule|comment|blank)*:bits -> [r for r in bits if r is not None]
+rule = <name>:name selector?:selector version?:version ('\n'|comment) -> (
     name, selector or [], version or [])
 lowercase = ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'
             |'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z')
@@ -52,6 +52,9 @@ selector = ws '[' profile:p1 (ws profile)*:p2 ']' -> [p1] + p2
 oneversion = <('<=' | '<' | '!=' | '==' | '>=' | '>')>:rel <debversion>:v -> (
     rel, v)
 version = ws oneversion:v1 (',' oneversion)*:v2 -> [v1] + v2
+comment = ws? '#' any* '\n' -> None
+any = ~'\n' anything
+blank = ws? '\n' -> None
 """
 
 

@@ -186,12 +186,17 @@ class TestDepends(TestCase):
             depends.check_rules([("foo", [], [("!=", "123")])]))
 
     def test_parser_patterns(self):
-        Depends(dedent("""\
+        depends = Depends(dedent("""\
             foo
             bar [something]
             baz [platform:this platform:that-those]
             quux [anotherthing !nothing] <=12
+            womp # and a comment
+            # a standalone comment and a blank line
+
+            # all's ok? good then
             """))
+        self.assertEqual(len(depends.active_rules(['default'])), 2)
 
     def test_parser_invalid(self):
         self.assertRaises(ometa.runtime.ParseError,

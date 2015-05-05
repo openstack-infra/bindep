@@ -75,6 +75,9 @@ Version constraints are a comma separated list of constraints where each
 constraint is  (== | < | <= | >= | > | !=) VERSION, and the constraints are ANDed
 together (the same as pip requirements version constraints).
 
+Comments are allowed: everything from the first ``#`` to the end of the line is
+ignored.
+
 Developing bindep
 =================
 
