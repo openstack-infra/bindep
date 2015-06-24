@@ -40,12 +40,15 @@ def main(depends=None):
         help="List the platform and configuration profiles.")
     opts, args = parser.parse_args()
     if depends is None:
-        try:
-            content = open(opts.filename, 'rt').read()
-        except IOError:
-            logging.error('No %s file found.' % opts.filename)
-            return 1
-        depends = bindep.depends.Depends(content)
+        if opts.filename == "-":
+            fd = sys.stdin
+        else:
+            try:
+                fd = open(opts.filename, 'rt')
+            except IOError:
+                logging.error('No %s file found.' % opts.filename)
+                return 1
+        depends = bindep.depends.Depends(fd.read())
     if opts.profiles:
         logging.info("Platform profiles:")
         for profile in depends.platform_profiles():

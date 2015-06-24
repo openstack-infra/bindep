@@ -100,6 +100,12 @@ class TestMain(TestCase):
             'No alternative-requirements.txt file found.\n',
             fixture.logger.output)
 
+    def test_stdin_requirements_file(self):
+        fixture = self.useFixture(MainFixture())
+        self.useFixture(MonkeyPatch('sys.argv', ['bindep', '--file', '-']))
+        self.assertEqual(0, main())
+        self.assertEqual('', fixture.logger.output)
+
     def test_specific_profile(self):
         logger = self.useFixture(FakeLogger())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep', 'myprofile']))

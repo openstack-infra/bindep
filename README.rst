@@ -18,6 +18,10 @@ dependencies. Users without `bindep` installed can consult the
 ``other-requirements.txt`` file by hand if they choose, or install `bindep`
 first and then use it.
 
+If you need to maintain multiple requirements list files you can pass a
+specific filename with the -f/--file command line option. If you want to read
+the list from standard input in a pipeline instead, use a filename of "-".
+
 Profiles
 --------
 
