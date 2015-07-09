@@ -18,9 +18,16 @@ dependencies. Users without `bindep` installed can consult the
 ``other-requirements.txt`` file by hand if they choose, or install `bindep`
 first and then use it.
 
+The output from bindep is fairly verbose normally, but passing an option of
+-b/--brief outputs just the missing packages one per line, suitable for feeding
+to your package management tool of choice.
+
 If you need to maintain multiple requirements list files you can pass a
 specific filename with the -f/--file command line option. If you want to read
 the list from standard input in a pipeline instead, use a filename of "-".
+
+When bindep runs, its exit code is ``0`` if no described packages are missing,
+but ``1`` if there are packages which it believes need to be installed.
 
 Profiles
 --------
