@@ -27,7 +27,9 @@ logging.basicConfig(
 
 
 def main(depends=None):
-    parser = optparse.OptionParser(version="%%prog %s" % bindep.version)
+    usage = "Usage: %prog [options] [profile]"
+    parser = optparse.OptionParser(
+        usage=usage, version="%%prog %s" % bindep.version)
     parser.add_option(
         "-b", "--brief", action="store_true", dest="brief",
         help="List only missing packages one per line.")
