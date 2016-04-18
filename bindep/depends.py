@@ -45,7 +45,7 @@ rule = <name>:name selector?:selector version?:version ('\n'|comment) -> (
     name, selector or [], version or [])
 lowercase = ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'
             |'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z')
-name = letterOrDigit:start (letterOrDigit|'.'|'+'|'-')+:rest
+name = letterOrDigit:start (letterOrDigit|'.'|'+'|'-'|'/')+:rest
 ws = ' '+
 profile = ('!'?:neg <(lowercase|digit|':'|'-')+>:name) -> (neg!='!', name)
 selector = ws '[' profile:p1 (ws profile)*:p2 ']' -> [p1] + p2
@@ -143,6 +143,9 @@ class Depends(object):
         elif distro in ["centos", "fedora"]:
             atoms.add("rpm")
             self.platform = Rpm()
+        elif distro in ["gentoo"]:
+            atoms.add("emerge")
+            self.platform = Emerge()
         return ["platform:%s" % (atom,) for atom in sorted(atoms)]
 
 
@@ -206,6 +209,30 @@ class Rpm(Platform):
         output = output.strip()
         elements = output.split(' ')
         return elements[1]
+
+
+class Emerge(Platform):
+    """emerge specific implementation.
+
+    This currently shells out to equery, it could be changed to eix to be
+    faster but that would add another dependency and eix's cache would need to
+    be updated before this is run.
+    """
+
+    def get_pkg_version(self, pkg_name):
+        try:
+            output = subprocess.check_output(
+                ['equery', 'l', '--format=\'$version\'', pkg_name],
+                stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 3:
+                return None
+            raise
+        # output looks like
+        # version
+        output = output.strip()
+        elements = output.split(' ')
+        return elements[0]
 
 
 def _eval_diff(operator, diff):
