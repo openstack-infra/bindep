@@ -66,6 +66,18 @@ class TestDepends(TestCase):
         self.assertThat(
             depends.platform_profiles(), Contains("platform:fedora"))
 
+    def test_detects_opensuse(self):
+        self._mock_lsb("openSUSE")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:opensuse"))
+
+    def test_detects_suse_linux(self):
+        self._mock_lsb("SUSE Linux")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:suselinux"))
+
     def test_detects_ubuntu(self):
         self._mock_lsb("Ubuntu")
         depends = Depends("")
@@ -99,6 +111,20 @@ class TestDepends(TestCase):
 
     def test_fedora_implies_rpm(self):
         self._mock_lsb("Fedora")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:rpm"))
+        self.assertIsInstance(depends.platform, Rpm)
+
+    def test_opensuse_implies_rpm(self):
+        self._mock_lsb("openSUSE")
+        depends = Depends("")
+        self.assertThat(
+            depends.platform_profiles(), Contains("platform:rpm"))
+        self.assertIsInstance(depends.platform, Rpm)
+
+    def test_suse_linux_implies_rpm(self):
+        self._mock_lsb("SUSE LINUX")
         depends = Depends("")
         self.assertThat(
             depends.platform_profiles(), Contains("platform:rpm"))
