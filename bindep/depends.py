@@ -205,6 +205,9 @@ class Depends(object):
         elif distro in ["gentoo"]:
             atoms.add("emerge")
             self.platform = Emerge()
+        elif distro in ["arch"]:
+            atoms.add("pacman")
+            self.platform = Pacman()
         return ["platform:%s" % (atom,) for atom in sorted(atoms)]
 
 
@@ -292,6 +295,27 @@ class Emerge(Platform):
         output = output.strip()
         elements = output.split(' ')
         return elements[0]
+
+
+class Pacman(Platform):
+    """pacman specific implementation.
+
+    This shells out to pacman
+    """
+
+    def get_pkg_version(self, pkg_name):
+        try:
+            output = subprocess.check_output(
+                ['pacman', '-Q', pkg_name],
+                stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 1 and e.output.endswith('was not found'):
+                return None
+            raise
+        # output looks like
+        # version
+        elements = output.strip().split(' ')
+        return elements[1]
 
 
 def _eval_diff(operator, diff):
