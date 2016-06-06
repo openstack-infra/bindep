@@ -130,8 +130,10 @@ class Depends(object):
         return sorted(profiles)
 
     def platform_profiles(self):
-        lsbinfo = subprocess.check_output(
-            ["lsb_release", "-cirs"], stderr=subprocess.STDOUT).lower().split()
+        output = subprocess.check_output(
+            ["lsb_release", "-cirs"],
+            stderr=subprocess.STDOUT).decode('utf-8')
+        lsbinfo = output.lower().split()
         # NOTE(toabctl): distro can be more than one string (i.e. "SUSE LINUX")
         codename = lsbinfo[len(lsbinfo) - 1:len(lsbinfo)][0]
         release = lsbinfo[len(lsbinfo) - 2:len(lsbinfo) - 1][0]
@@ -175,7 +177,7 @@ class Dpkg(Platform):
         try:
             output = subprocess.check_output(
                 ["dpkg-query", "-W", "-f", "${Package} ${Status} ${Version}\n",
-                 pkg_name], stderr=subprocess.STDOUT)
+                 pkg_name], stderr=subprocess.STDOUT).decode('utf-8')
         except subprocess.CalledProcessError as e:
             if (e.returncode == 1 and
                 (e.output.startswith('dpkg-query: no packages found') or
@@ -203,7 +205,7 @@ class Rpm(Platform):
             output = subprocess.check_output(
                 ["rpm", "--qf",
                  "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
-                 pkg_name], stderr=subprocess.STDOUT)
+                 pkg_name], stderr=subprocess.STDOUT).decode('utf-8')
         except subprocess.CalledProcessError as e:
             if (e.returncode == 1 and
                 e.output.strip().endswith('is not installed')):
@@ -228,7 +230,7 @@ class Emerge(Platform):
         try:
             output = subprocess.check_output(
                 ['equery', 'l', '--format=\'$version\'', pkg_name],
-                stderr=subprocess.STDOUT)
+                stderr=subprocess.STDOUT).decode('utf-8')
         except subprocess.CalledProcessError as e:
             if e.returncode == 3:
                 return None

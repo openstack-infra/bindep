@@ -15,10 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import contextlib
 import subprocess
 from textwrap import dedent
 
-import mox
+import fixtures
+import mock
 import ometa.runtime
 from testtools.matchers import Contains
 from testtools.matchers import Equals
@@ -29,8 +31,12 @@ from bindep.depends import _eval
 from bindep.depends import Depends
 from bindep.depends import Dpkg
 from bindep.depends import Emerge
-from bindep.depends import Platform
 from bindep.depends import Rpm
+
+
+# NOTE(notmorgan): In python3 subprocess.check_output returns bytes not
+# string. All mock calls for subprocess.check_output have been updated to
+# ensure bytes is used over string. In python 2 this is a no-op change.
 
 
 class TestDepends(TestCase):
@@ -43,99 +49,101 @@ class TestDepends(TestCase):
         depends = Depends("")
         self.assertIsInstance(depends.platform_profiles(), list)
 
+    @contextlib.contextmanager
     def _mock_lsb(self, platform):
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
-            ["lsb_release", "-cirs"],
-            stderr=subprocess.STDOUT).AndReturn("%s\n14.04\ntrusty\n"
-                                                % platform)
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+        r_val = "%s\n14.04\ntrusty\n" % platform
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(
+                subprocess,
+                'check_output',
+                return_value=r_val.encode('utf-8'))).mock
+        yield mock_checkoutput
+        mock_checkoutput.assert_called_once_with(["lsb_release", "-cirs"],
+                                                 stderr=subprocess.STDOUT)
 
     def test_detects_centos(self):
-        self._mock_lsb("CentOS")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:centos"))
+        with self._mock_lsb("CentOS"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:centos"))
 
     def test_detects_fedora(self):
-        self._mock_lsb("Fedora")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:fedora"))
+        with self._mock_lsb("Fedora"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:fedora"))
 
     def test_detects_opensuse(self):
-        self._mock_lsb("openSUSE")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:opensuse"))
+        with self._mock_lsb("openSUSE"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:opensuse"))
 
     def test_detects_suse_linux(self):
-        self._mock_lsb("SUSE Linux")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:suselinux"))
+        with self._mock_lsb("SUSE Linux"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:suselinux"))
 
     def test_detects_ubuntu(self):
-        self._mock_lsb("Ubuntu")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:ubuntu"))
+        with self._mock_lsb("Ubuntu"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:ubuntu"))
 
     def test_detects_release(self):
-        self._mock_lsb("Ubuntu")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:ubuntu-14"))
+        with self._mock_lsb("Ubuntu"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:ubuntu-14"))
 
     def test_detects_subrelease(self):
-        self._mock_lsb("Ubuntu")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:ubuntu-14.04"))
+        with self._mock_lsb("Ubuntu"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:ubuntu-14.04"))
 
     def test_detects_codename(self):
-        self._mock_lsb("Ubuntu")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:ubuntu-trusty"))
+        with self._mock_lsb("Ubuntu"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(),
+                Contains("platform:ubuntu-trusty"))
 
     def test_centos_implies_rpm(self):
-        self._mock_lsb("CentOS")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:rpm"))
-        self.assertIsInstance(depends.platform, Rpm)
+        with self._mock_lsb("CentOS"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:rpm"))
+            self.assertIsInstance(depends.platform, Rpm)
 
     def test_fedora_implies_rpm(self):
-        self._mock_lsb("Fedora")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:rpm"))
-        self.assertIsInstance(depends.platform, Rpm)
+        with self._mock_lsb("Fedora"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:rpm"))
+            self.assertIsInstance(depends.platform, Rpm)
 
     def test_opensuse_implies_rpm(self):
-        self._mock_lsb("openSUSE")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:rpm"))
-        self.assertIsInstance(depends.platform, Rpm)
+        with self._mock_lsb("openSUSE"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:rpm"))
+            self.assertIsInstance(depends.platform, Rpm)
 
     def test_suse_linux_implies_rpm(self):
-        self._mock_lsb("SUSE LINUX")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:rpm"))
-        self.assertIsInstance(depends.platform, Rpm)
+        with self._mock_lsb("SUSE LINUX"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:rpm"))
+            self.assertIsInstance(depends.platform, Rpm)
 
     def test_ubuntu_implies_dpkg(self):
-        self._mock_lsb("Ubuntu")
-        depends = Depends("")
-        self.assertThat(
-            depends.platform_profiles(), Contains("platform:dpkg"))
-        self.assertIsInstance(depends.platform, Dpkg)
+        with self._mock_lsb("Ubuntu"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:dpkg"))
+            self.assertIsInstance(depends.platform, Dpkg)
 
     def test_finds_profiles(self):
         depends = Depends(dedent("""\
@@ -184,33 +192,34 @@ class TestDepends(TestCase):
 
     def test_check_rule_missing(self):
         depends = Depends("")
-        mocker = mox.Mox()
-        depends.platform = mocker.CreateMock(Platform)
-        depends.platform.get_pkg_version("foo").AndReturn(None)
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
+        depends.platform = mock.MagicMock()
+        mock_depend_platform = self.useFixture(
+            fixtures.MockPatchObject(depends.platform, 'get_pkg_version',
+                                     return_value=None)).mock
         self.assertEqual(
             [('missing', ['foo'])], depends.check_rules([("foo", [], [])]))
+        mock_depend_platform.assert_called_once_with("foo")
 
     def test_check_rule_present(self):
         depends = Depends("")
-        mocker = mox.Mox()
-        depends.platform = mocker.CreateMock(Platform)
-        depends.platform.get_pkg_version("foo").AndReturn("123")
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
+        depends.platform = mock.MagicMock()
+        mock_depend_platform = self.useFixture(
+            fixtures.MockPatchObject(depends.platform, 'get_pkg_version',
+                                     return_value="123")).mock
         self.assertEqual([], depends.check_rules([("foo", [], [])]))
+        mock_depend_platform.assert_called_once_with("foo")
 
     def test_check_rule_incompatible(self):
         depends = Depends("")
-        mocker = mox.Mox()
-        depends.platform = mocker.CreateMock(Platform)
-        depends.platform.get_pkg_version("foo").AndReturn("123")
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
+        depends.platform = mock.MagicMock()
+        depends.platform = mock.MagicMock()
+        mock_depend_platform = self.useFixture(
+            fixtures.MockPatchObject(depends.platform, 'get_pkg_version',
+                                     return_value="123")).mock
         self.assertEqual(
             [('badversion', [('foo', "!=123", "123")])],
             depends.check_rules([("foo", [], [("!=", "123")])]))
+        mock_depend_platform.assert_called_once_with("foo")
 
     def test_parser_patterns(self):
         depends = Depends(dedent("""\
@@ -235,88 +244,90 @@ class TestDpkg(TestCase):
 
     def test_not_installed(self):
         platform = Dpkg()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(
+                subprocess,
+                'check_output',
+                return_value=b"foo deinstall ok config-files 4.0.0-0ubuntu1\n")
+        ).mock
+        self.assertEqual(None, platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT).AndReturn(
-                "foo deinstall ok config-files 4.0.0-0ubuntu1\n")
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
-        self.assertEqual(None, platform.get_pkg_version("foo"))
+            stderr=subprocess.STDOUT)
 
     def test_unknown_package(self):
         platform = Dpkg()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, 'check_output')).mock
+
+        def _side_effect_raise(*args, **kwargs):
+            raise subprocess.CalledProcessError(
+                1, [], "dpkg-query: no packages found matching foo\n")
+
+        mock_checkoutput.side_effect = _side_effect_raise
+        self.assertEqual(None, platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT).AndRaise(
-                subprocess.CalledProcessError(
-                    1, [], "dpkg-query: no packages found matching foo\n"))
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
-        self.assertEqual(None, platform.get_pkg_version("foo"))
+            stderr=subprocess.STDOUT)
 
     def test_installed_version(self):
         platform = Dpkg()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
+        mocked_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(
+                subprocess,
+                'check_output',
+                return_value=b"foo install ok installed 4.0.0-0ubuntu1\n")
+        ).mock
+        self.assertEqual("4.0.0-0ubuntu1", platform.get_pkg_version("foo"))
+        mocked_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT).AndReturn(
-                "foo install ok installed 4.0.0-0ubuntu1\n")
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
-        self.assertEqual("4.0.0-0ubuntu1", platform.get_pkg_version("foo"))
+            stderr=subprocess.STDOUT)
 
 
 class TestEmerge(TestCase):
 
     def test_not_installed(self):
         platform = Emerge()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
-            ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT).AndRaise(
-                subprocess.CalledProcessError(3, [], ''))
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+
+        def _side_effect_raise(*args, **kwargs):
+            raise subprocess.CalledProcessError(3, [], '')
+
+        mocked_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, 'check_output')).mock
+
+        mocked_checkoutput.side_effect = _side_effect_raise
         self.assertEqual(None, platform.get_pkg_version("foo"))
+        mocked_checkoutput.assert_called_once_with(
+            ['equery', 'l', '--format=\'$version\'', 'foo'],
+            stderr=subprocess.STDOUT)
 
     def test_unknown_package(self):
         platform = Emerge()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
-            ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT).AndRaise(
-                subprocess.CalledProcessError(3, [], ''))
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+
+        def _side_effect_raise(*args, **kwargs):
+            raise subprocess.CalledProcessError(3, [], '')
+
+        mocked_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, 'check_output')).mock
+
+        mocked_checkoutput.side_effect = _side_effect_raise
         self.assertEqual(None, platform.get_pkg_version("foo"))
+        mocked_checkoutput.assert_called_once_with(
+            ['equery', 'l', '--format=\'$version\'', 'foo'],
+            stderr=subprocess.STDOUT)
 
     def test_installed_version(self):
         platform = Emerge()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
-            ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT).AndReturn(
-                "4.0.0\n")
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, 'check_output',
+                                     return_value=b"4.0.0\n")).mock
         self.assertEqual("4.0.0", platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
+            ['equery', 'l', '--format=\'$version\'', 'foo'],
+            stderr=subprocess.STDOUT)
 
 
 class TestRpm(TestCase):
@@ -326,33 +337,33 @@ class TestRpm(TestCase):
 
     def test_unknown_package(self):
         platform = Rpm()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
+
+        def _side_effect_raise(*args, **kwargs):
+            raise subprocess.CalledProcessError(
+                1, [], "package foo is not installed\n")
+
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, 'check_output')).mock
+        mock_checkoutput.side_effect = _side_effect_raise
+        self.assertEqual(None, platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
             ["rpm", "--qf",
              "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
              "foo"],
-            stderr=subprocess.STDOUT).AndRaise(
-                subprocess.CalledProcessError(
-                    1, [], "package foo is not installed\n"))
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+            stderr=subprocess.STDOUT)
         self.assertEqual(None, platform.get_pkg_version("foo"))
 
     def test_installed_version(self):
         platform = Rpm()
-        mocker = mox.Mox()
-        mocker.StubOutWithMock(subprocess, "check_output")
-        subprocess.check_output(
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, 'check_output',
+                                     return_value=b"foo 4.0.0-0.el6\n")).mock
+        self.assertEqual("4.0.0-0.el6", platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
             ["rpm", "--qf",
              "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
              "foo"],
-            stderr=subprocess.STDOUT).AndReturn("foo 4.0.0-0.el6\n")
-        mocker.ReplayAll()
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
-        self.assertEqual("4.0.0-0.el6", platform.get_pkg_version("foo"))
+            stderr=subprocess.STDOUT)
 
 
 class TestEval(TestCase):

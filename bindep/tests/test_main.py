@@ -22,10 +22,9 @@ from fixtures import FakeLogger
 from fixtures import Fixture
 from fixtures import MonkeyPatch
 from fixtures import TempDir
-import mox
+import mock
 from testtools import TestCase
 
-from bindep.depends import Depends
 from bindep.main import main
 
 
@@ -109,42 +108,40 @@ class TestMain(TestCase):
     def test_specific_profile(self):
         logger = self.useFixture(FakeLogger())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep', 'myprofile']))
-        mocker = mox.Mox()
-        depends = mocker.CreateMock(Depends)
-        depends.platform_profiles().AndReturn(["platform:ubuntu"])
-        depends.active_rules(["myprofile", "platform:ubuntu"]).AndReturn([""])
-        depends.check_rules([""]).AndReturn([])
-        mocker.ReplayAll()
+        depends = mock.MagicMock()
+        depends.platform_profiles.return_value = ["platform:ubuntu"]
+        depends.active_rules.return_value = [""]
+        depends.check_rules.return_value = []
         self.assertEqual(0, main(depends=depends))
         self.assertEqual("", logger.output)
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+        depends.platform_profiles.assert_called()
+        depends.active_rules.assert_called_once_with(["myprofile",
+                                                      "platform:ubuntu"])
+        depends.check_rules.assert_called_once_with([""])
 
     def test_default_profile(self):
         logger = self.useFixture(FakeLogger())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep']))
-        mocker = mox.Mox()
-        depends = mocker.CreateMock(Depends)
-        depends.platform_profiles().AndReturn(["platform:ubuntu"])
-        depends.active_rules(["default", "platform:ubuntu"]).AndReturn(["A"])
-        depends.check_rules(["A"]).AndReturn([])
-        mocker.ReplayAll()
+        depends = mock.MagicMock()
+        depends.platform_profiles.return_value = ["platform:ubuntu"]
+        depends.active_rules.return_value = ["A"]
+        depends.check_rules.return_value = []
         self.assertEqual(0, main(depends=depends))
         self.assertEqual("", logger.output)
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+        depends.platform_profiles.assert_called_once_with()
+        depends.active_rules.assert_called_once_with(["default",
+                                                      "platform:ubuntu"])
+        depends.check_rules.assert_called_once_with(["A"])
 
     def test_errors_shown(self):
         logger = self.useFixture(FakeLogger())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep']))
-        mocker = mox.Mox()
-        depends = mocker.CreateMock(Depends)
-        depends.platform_profiles().AndReturn([])
-        depends.active_rules(["default"]).AndReturn([])
-        depends.check_rules([]).AndReturn(
-            [('missing', ['foo', 'bar']),
-             ('badversion', [('quux', '<=12', '13'), ('qaaz', '!=10', '10')])])
-        mocker.ReplayAll()
+        depends = mock.MagicMock()
+        depends.platform_profiles.return_value = []
+        depends.active_rules.return_value = []
+        depends.check_rules.return_value = [
+            ('missing', ['foo', 'bar']),
+            ('badversion', [('quux', '<=12', '13'), ('qaaz', '!=10', '10')])]
         self.assertEqual(1, main(depends=depends))
         self.assertEqual(dedent("""\
             Missing packages:
@@ -153,24 +150,24 @@ class TestMain(TestCase):
                 quux version 13 does not match <=12
                 qaaz version 10 does not match !=10
             """), logger.output)
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+        depends.platform_profiles.assert_called_once_with()
+        depends.active_rules.assert_called_once_with(["default"])
+        depends.check_rules.assert_called_once_with([])
 
     def test_brief_mode(self):
         logger = self.useFixture(FakeLogger())
         self.useFixture(MonkeyPatch('sys.argv', ['bindep', '--brief']))
-        mocker = mox.Mox()
-        depends = mocker.CreateMock(Depends)
-        depends.platform_profiles().AndReturn([])
-        depends.active_rules(["default"]).AndReturn([])
-        depends.check_rules([]).AndReturn(
-            [('missing', ['foo', 'bar']),
-             ('badversion', [('quux', '<=12', '13'), ('qaaz', '!=10', '10')])])
-        mocker.ReplayAll()
+        depends = mock.MagicMock()
+        depends.platform_profiles.return_value = []
+        depends.active_rules.return_value = []
+        depends.check_rules.return_value = [
+            ('missing', ['foo', 'bar']),
+            ('badversion', [('quux', '<=12', '13'), ('qaaz', '!=10', '10')])]
         self.assertEqual(1, main(depends=depends))
         self.assertEqual(dedent("""\
             foo
             bar
             """), logger.output)
-        self.addCleanup(mocker.VerifyAll)
-        self.addCleanup(mocker.UnsetStubs)
+        depends.platform_profiles.assert_called_once_with()
+        depends.active_rules.assert_called_once_with(["default"])
+        depends.check_rules.assert_called_once_with([])
