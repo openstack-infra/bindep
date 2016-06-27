@@ -130,8 +130,13 @@ class Depends(object):
         return sorted(profiles)
 
     def platform_profiles(self):
-        distro, release, codename = subprocess.check_output(
+        lsbinfo = subprocess.check_output(
             ["lsb_release", "-cirs"], stderr=subprocess.STDOUT).lower().split()
+        # NOTE(toabctl): distro can be more than one string (i.e. "SUSE LINUX")
+        codename = lsbinfo[len(lsbinfo) - 1:len(lsbinfo)][0]
+        release = lsbinfo[len(lsbinfo) - 2:len(lsbinfo) - 1][0]
+        # NOTE(toabctl): space is a delimiter for bindep, so remove the spaces
+        distro = "".join(lsbinfo[0:len(lsbinfo) - 2])
         atoms = set([distro])
         atoms.add("%s-%s" % (distro, codename))
         releasebits = release.split(".")
@@ -140,7 +145,7 @@ class Depends(object):
         if distro in ["debian", "ubuntu"]:
             atoms.add("dpkg")
             self.platform = Dpkg()
-        elif distro in ["centos", "fedora"]:
+        elif distro in ["centos", "fedora", "opensuse", "suselinux"]:
             atoms.add("rpm")
             self.platform = Rpm()
         elif distro in ["gentoo"]:
