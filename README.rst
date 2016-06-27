@@ -82,6 +82,13 @@ profile (or selected ``default``). ``[default postgresql test]`` would match
 those three profiles but not ``mysql``. ``[platform:rhel]`` will match only
 when running in a RHEL linux environment.
 
+Note that platform selectors are treated as kind of filter: If a line
+contains a platform selector, then the package only gets installed if
+at least one of the platform selectors matches in addition to the
+match on the other selectors. As an example, ``[platform:rpm test]``
+would only install a package on a RPM platform if the test selector is
+used.
+
 Version constraints are a comma separated list of constraints where each
 constraint is  (== | < | <= | >= | > | !=) VERSION, and the constraints are ANDed
 together (the same as pip requirements version constraints).

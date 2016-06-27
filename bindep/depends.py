@@ -61,6 +61,23 @@ blank = ws? '\n' -> None
 class Depends(object):
     """Project dependencies."""
 
+    # Truth table for combining platform and user profiles:
+    # (platform, user) where False means that component
+    # voted definitely no, True means that that component
+    # voted definitely yes and None means that that component
+    # hasn't voted.
+    _include = {
+        (False, False): False,
+        (False, None): False,
+        (False, True): False,
+        (None, False): False,
+        (None, None): True,
+        (None, True): True,
+        (True, False): False,
+        (True, None): True,
+        (True, True): True,
+    }
+
     def __init__(self, depends_string):
         """Construct a Depends instance.
 
@@ -71,6 +88,49 @@ class Depends(object):
         parser = makeGrammar(grammar, {})(depends_string)
         self._rules = parser.rules()
 
+    def _partition(self, rule):
+        """Separate conditions into platform and user profiles.
+
+        :return Two lists, the platform and user profiles.
+        """
+        platform = []
+        user = []
+        for sense, profile in rule[1]:
+            if profile.startswith("platform:"):
+                platform.append((sense, profile))
+            else:
+                user.append((sense, profile))
+        return platform, user
+
+    def _evaluate(self, partition_rule, profiles):
+        """Evaluate rule. Does it match the profiles?
+
+        :return Result is trinary: False for definitely no, True for
+        definitely yes, None for no rules present.
+        """
+
+        if partition_rule == []:
+            return None
+
+        # Have we seen any positive selectors - if not, the absence of
+        # negatives means we include the rule, but if we any positive
+        # selectors we need a match.
+        positive = False
+        match_found = False
+        negative = False
+        for sense, profile in partition_rule:
+            if sense:
+                positive = True
+                if profile in profiles:
+                    match_found = True
+            else:
+                if profile in profiles:
+                    negative = True
+                    break
+        if not negative and (match_found or not positive):
+                return True
+        return False
+
     def active_rules(self, profiles):
         """Return the rules active given profiles.
 
@@ -80,22 +140,15 @@ class Depends(object):
         profiles = set(profiles)
         result = []
         for rule in self._rules:
-            # Have we seen any positive selectors - if not, the absence of
-            # negatives means we include the rule, but if we any positive
-            # selectors we need a match.
-            positive = False
-            match_found = False
-            negative = False
-            for sense, profile in rule[1]:
-                if sense:
-                    positive = True
-                    if profile in profiles:
-                        match_found = True
-                else:
-                    if profile in profiles:
-                        negative = True
-                        break
-            if not negative and (match_found or not positive):
+            # Partition rules
+            platform_profiles, user_profiles = self._partition(rule)
+            # Evaluate each partition separately
+            platform_status = self._evaluate(platform_profiles, profiles)
+            user_status = self._evaluate(user_profiles, profiles)
+            # Combine results
+            # These are trinary: False for definitely no, True for
+            # definitely yes, None for no rules present.
+            if self._include[platform_status, user_status]:
                 result.append(rule)
         return result
 
