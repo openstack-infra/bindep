@@ -108,7 +108,6 @@ class Depends(object):
         :return Result is trinary: False for definitely no, True for
         definitely yes, None for no rules present.
         """
-
         if partition_rule == []:
             return None
 
