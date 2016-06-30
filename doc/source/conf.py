@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import os
 import sys
 
@@ -39,7 +40,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'bindep'
-copyright = u'2016, OpenStack Foundation'
+copyright = u"%d, OpenStack Foundation" % datetime.datetime.now().year
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
