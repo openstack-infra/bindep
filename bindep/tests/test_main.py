@@ -71,7 +71,8 @@ class TestMain(TestCase):
         self.useFixture(MonkeyPatch('sys.argv', ['bindep']))
         self.assertEqual(1, main())
         self.assertEqual(
-            'No other-requirements.txt file found.\n', fixture.logger.output)
+            'Neither file bindep.txt nor file other-requirements.txt exist.\n',
+            fixture.logger.output)
 
     def test_empty_requirements_file(self):
         fixture = self.useFixture(MainFixture())
@@ -96,7 +97,7 @@ class TestMain(TestCase):
             'bindep', '--file', 'alternative-requirements.txt']))
         self.assertEqual(1, main())
         self.assertEqual(
-            'No alternative-requirements.txt file found.\n',
+            'Error reading file alternative-requirements.txt.\n',
             fixture.logger.output)
 
     def test_stdin_requirements_file(self):

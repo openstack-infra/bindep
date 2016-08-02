@@ -1,3 +1,10 @@
+Change of default file
+======================
+
+File bindep.txt is now the default bindep file. For compatibility with
+previous releases, bindep will check other-requirements.txt if
+bindep.txt does not exist.
+
 Backward-Incompatible Changes Between 1.0.0 and 2.0.0
 =====================================================
 

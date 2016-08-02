@@ -11,12 +11,15 @@ installed before `pip` can be used - such as `virtualenv` and `pip` itself.
 Basics
 ======
 
-Create a file called ``other-requirements.txt`` and in that list any
+Create a file called ``bindep.txt`` and in that list any
 requirements your application / library has. In your README or INSTALL or
 other documentation you can tell users to run `bindep` to report on missing
 dependencies. Users without `bindep` installed can consult the
-``other-requirements.txt`` file by hand if they choose, or install `bindep`
+``bindep.txt`` file by hand if they choose, or install `bindep`
 first and then use it.
+
+If no ``bindep.txt`` file exists, `bindep` will look at the
+old location ``other-requirements.txt``.
 
 The output from bindep is fairly verbose normally, but passing an option of
 -b/--brief outputs just the missing packages one per line, suitable for feeding

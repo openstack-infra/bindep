@@ -17,6 +17,7 @@
 
 import logging
 import optparse
+import os.path
 import sys
 
 import bindep.depends
@@ -35,8 +36,9 @@ def main(depends=None):
         help="List only missing packages one per line.")
     parser.add_option(
         "-f", "--file", action="store", type="string", dest="filename",
-        default="other-requirements.txt",
-        help="Package list file (default: other-requirements.txt).")
+        default="",
+        help="Package list file (default: bindep.txt or "
+             "other-requirements.txt).")
     parser.add_option(
         "--profiles", action="store_true",
         help="List the platform and configuration profiles.")
@@ -44,12 +46,35 @@ def main(depends=None):
     if depends is None:
         if opts.filename == "-":
             fd = sys.stdin
-        else:
+        elif opts.filename:
             try:
                 fd = open(opts.filename, 'rt')
             except IOError:
-                logging.error('No %s file found.' % opts.filename)
+                logging.error('Error reading file %s.' % opts.filename)
                 return 1
+        else:
+            if (os.path.isfile('bindep.txt') and
+                os.path.isfile('other-requirements.txt')):
+                logging.error('Both bindep.txt and other-requirements.txt '
+                              'files exist, choose one.')
+                return 1
+            if os.path.isfile('bindep.txt'):
+                try:
+                    fd = open('bindep.txt', 'rt')
+                except IOError:
+                    logging.error('Error reading file bindep.txt.')
+                    return 1
+            elif os.path.isfile('other-requirements.txt'):
+                try:
+                    fd = open('other-requirements.txt', 'rt')
+                except IOError:
+                    logging.error('Error reading file other-requirements.txt.')
+                    return 1
+            else:
+                logging.error('Neither file bindep.txt nor file '
+                              'other-requirements.txt exist.')
+                return 1
+
         depends = bindep.depends.Depends(fd.read())
     if opts.profiles:
         logging.info("Platform profiles:")
