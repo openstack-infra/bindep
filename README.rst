@@ -59,7 +59,7 @@ available profiles::
 Writing Requirements Files
 ==========================
 
-The requirements file ``other-requirements.txt`` lists the dependencies for
+The requirements file ``bindep.txt`` lists the dependencies for
 projects. Where non-ascii characters are needed, they should be UTF8 encoded.
 
 The file is line orientated - each line is a Debian binary package name, an
@@ -103,7 +103,7 @@ Developing bindep
 =================
 
 Either install `bindep` and run ``bindep test`` to check you have the needed
-tools, or review ``other-requirements.txt`` by hand.
+tools, or review ``bindep.txt`` by hand.
 
 Running Tests
 -------------
