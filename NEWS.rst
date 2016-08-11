@@ -1,9 +1,10 @@
-Change of default file
-======================
+Behavior Change in 2.1.0
+========================
 
 File bindep.txt is now the default bindep file. For compatibility with
 previous releases, bindep will check other-requirements.txt if
-bindep.txt does not exist.
+bindep.txt does not exist. If both exist and the -f/--file option is
+not specified, it will emit an error.
 
 Backward-Incompatible Changes Between 1.0.0 and 2.0.0
 =====================================================
