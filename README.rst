@@ -99,6 +99,61 @@ together (the same as pip requirements version constraints).
 Comments are allowed: everything from the first ``#`` to the end of the line is
 ignored.
 
+Examples
+--------
+
+A simple example with using a test profile is::
+
+    # A runtime dependency
+    libffi6
+    # A build time dependency
+    libffi-devel [test]
+
+bindep would select the ``libffi6`` package in all cases and if the
+``test`` profile gets choosen with ``bindep test``, then both packages
+would be selected.
+
+The following content gives some examples as used in the `default bindep file
+<http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/data/bindep-fallback.txt>`_
+that OpenStack CI takes if no ``bindep.txt`` file exists for setup of
+some jobs. The examples only use the automatically defined profiles
+like ``platform:dpkg`` which is defined on Debian based systems.
+
+If a repository needs for deployment the libxml2 development
+libraries for support of Debian, Gentoo, and RPM based distros, the
+``bindep.txt`` file can contain::
+
+    libxml2-dev [platform:dpkg]
+    libxml2-devel [platform:rpm]
+    libxml2-utils [platform:dpkg]
+    dev-libs/libxml2 [platform:gentoo]
+
+This would select ``libxml2-dev`` and ``libxml2-utils`` packages on
+Debian based distributions like Debian and Ubuntu since those entries
+have the ``platform:dpkg`` profile, ``libxml2-devel`` on RPM based
+distributions like CentOS, Fedora, openSUSE, Red Hat, or SUSE Linux
+since those entries have the ``platform:rpm`` profile, and
+``dev-libs/libxml2`` on Gentoo since the entry has the
+``platform:gentoo`` profile.
+
+To select Python3 development packages, the OpenStack CI default file uses::
+
+    python3-all-dev [platform:dpkg !platform:ubuntu-precise]
+    python3-devel [platform:fedora]
+    python34-devel [platform:centos]
+
+This selects ``python3-all-dev`` on all Debian based distributions
+with the exception of Ubuntu Precise, ``python3-devel`` on Fedora and
+``python34-devel`` on CentOS.
+
+To select the curl package, the OpenStack CI default file uses::
+
+    curl [!platform:gentoo]
+    net-misc/curl [platform:gentoo]
+
+This selects the ``curl`` package on all distributions with the
+exception of Gentoo, and selects ``net-misc/curl`` on Gentoo only.
+
 Developing bindep
 =================
 
