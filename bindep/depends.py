@@ -18,11 +18,6 @@
 from parsley import makeGrammar
 import subprocess
 
-if not getattr(subprocess, 'check_output', None):
-    import bindep.support_py26
-    # shut pyflakes up.
-    bindep.support_py26
-
 
 debversion_grammar = """
 epoch = <digit+>:d ':' -> d
