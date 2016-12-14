@@ -343,7 +343,8 @@ class TestDpkg(TestCase):
         mock_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
     def test_unknown_package(self):
         platform = Dpkg()
@@ -359,7 +360,8 @@ class TestDpkg(TestCase):
         mock_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
     def test_installed_version(self):
         platform = Dpkg()
@@ -373,7 +375,8 @@ class TestDpkg(TestCase):
         mocked_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
 
 class TestEmerge(TestCase):
@@ -391,7 +394,8 @@ class TestEmerge(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mocked_checkoutput.assert_called_once_with(
             ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
     def test_unknown_package(self):
         platform = Emerge()
@@ -406,7 +410,8 @@ class TestEmerge(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mocked_checkoutput.assert_called_once_with(
             ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
     def test_installed_version(self):
         platform = Emerge()
@@ -416,7 +421,8 @@ class TestEmerge(TestCase):
         self.assertEqual("4.0.0", platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
 
 class TestPacman(TestCase):
@@ -435,7 +441,8 @@ class TestPacman(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['pacman', '-Q', 'foo'],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
         self.assertEqual(None, platform.get_pkg_version("foo"))
 
     def test_installed_version(self):
@@ -446,7 +453,8 @@ class TestPacman(TestCase):
         self.assertEqual("4.0.0-2", platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['pacman', '-Q', 'foo'],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
 
 class TestRpm(TestCase):
@@ -469,7 +477,8 @@ class TestRpm(TestCase):
             ["rpm", "--qf",
              "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
              "foo"],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
         self.assertEqual(None, platform.get_pkg_version("foo"))
 
     def test_installed_version(self):
@@ -482,7 +491,8 @@ class TestRpm(TestCase):
             ["rpm", "--qf",
              "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
              "foo"],
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.STDOUT,
+            universal_newlines=True)
 
 
 class TestEval(TestCase):
