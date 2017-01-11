@@ -194,7 +194,11 @@ class Depends(object):
         if distro in ["debian", "ubuntu"]:
             atoms.add("dpkg")
             self.platform = Dpkg()
-        elif distro in ["centos", "fedora", "opensuse", "suselinux"]:
+        elif distro in ["centos", "redhatenterpriseserver", "fedora",
+                        "opensuse", "suselinux"]:
+            if distro == "redhatenterpriseserver":
+                # just short alias
+                atoms.add("rhel")
             atoms.add("rpm")
             self.platform = Rpm()
         elif distro in ["gentoo"]:
