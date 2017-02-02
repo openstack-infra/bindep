@@ -17,7 +17,6 @@
 
 import logging
 import optparse
-import os.path
 import sys
 
 import bindep.depends
@@ -44,38 +43,9 @@ def main(depends=None):
         help="List the platform and configuration profiles.")
     opts, args = parser.parse_args()
     if depends is None:
-        if opts.filename == "-":
-            fd = sys.stdin
-        elif opts.filename:
-            try:
-                fd = open(opts.filename, 'rt')
-            except IOError:
-                logging.error('Error reading file %s.' % opts.filename)
-                return 1
-        else:
-            if (os.path.isfile('bindep.txt') and
-                os.path.isfile('other-requirements.txt')):
-                logging.error('Both bindep.txt and other-requirements.txt '
-                              'files exist, choose one.')
-                return 1
-            if os.path.isfile('bindep.txt'):
-                try:
-                    fd = open('bindep.txt', 'rt')
-                except IOError:
-                    logging.error('Error reading file bindep.txt.')
-                    return 1
-            elif os.path.isfile('other-requirements.txt'):
-                try:
-                    fd = open('other-requirements.txt', 'rt')
-                except IOError:
-                    logging.error('Error reading file other-requirements.txt.')
-                    return 1
-            else:
-                logging.error('Neither file bindep.txt nor file '
-                              'other-requirements.txt exist.')
-                return 1
-
-        depends = bindep.depends.Depends(fd.read())
+        depends = bindep.depends.get_depends(opts.filename)
+        if not depends:
+            return 1
     if opts.profiles:
         logging.info("Platform profiles:")
         for profile in depends.platform_profiles():

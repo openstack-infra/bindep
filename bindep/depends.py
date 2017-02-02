@@ -15,8 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import os.path
 from parsley import makeGrammar
 import subprocess
+import sys
 
 
 debversion_grammar = """
@@ -51,6 +54,50 @@ comment = ws? '#' any* '\n' -> None
 any = ~'\n' anything
 blank = ws? '\n' -> None
 """
+
+
+def get_depends(filename=None):
+    fd = get_depends_file(filename)
+    if not fd:
+        return None
+    return Depends(fd.read())
+
+
+def get_depends_file(filename=None):
+    log = logging.getLogger(__name__)
+    if filename == "-":
+        return sys.stdin
+    elif filename:
+        try:
+            fd = open(filename, 'rt')
+        except IOError:
+            log.error('Error reading file %s.' % filename)
+            return None
+    else:
+        if (os.path.isfile('bindep.txt') and
+            os.path.isfile('other-requirements.txt')):
+            log.error(
+                'Both bindep.txt and other-requirements.txt '
+                'files exist, choose one.')
+            return None
+        if os.path.isfile('bindep.txt'):
+            try:
+                fd = open('bindep.txt', 'rt')
+            except IOError:
+                log.error('Error reading file bindep.txt.')
+                return None
+        elif os.path.isfile('other-requirements.txt'):
+            try:
+                fd = open('other-requirements.txt', 'rt')
+            except IOError:
+                log.error('Error reading file other-requirements.txt.')
+                return None
+        else:
+            log.error(
+                'Neither file bindep.txt nor file '
+                'other-requirements.txt exist.')
+            return None
+    return fd
 
 
 class Depends(object):
