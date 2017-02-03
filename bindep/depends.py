@@ -231,7 +231,9 @@ class Dpkg(Platform):
         try:
             output = subprocess.check_output(
                 ["dpkg-query", "-W", "-f", "${Package} ${Status} ${Version}\n",
-                 pkg_name], stderr=subprocess.STDOUT).decode('utf-8')
+                 pkg_name],
+                stderr=subprocess.STDOUT,
+                universal_newlines=True).decode('utf-8')
         except subprocess.CalledProcessError as e:
             if (e.returncode == 1 and
                 (e.output.startswith('dpkg-query: no packages found') or
@@ -259,7 +261,9 @@ class Rpm(Platform):
             output = subprocess.check_output(
                 ["rpm", "--qf",
                  "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
-                 pkg_name], stderr=subprocess.STDOUT).decode('utf-8')
+                 pkg_name],
+                stderr=subprocess.STDOUT,
+                universal_newlines=True).decode('utf-8')
         except subprocess.CalledProcessError as e:
             if (e.returncode == 1 and
                 e.output.strip().endswith('is not installed')):
@@ -284,7 +288,8 @@ class Emerge(Platform):
         try:
             output = subprocess.check_output(
                 ['equery', 'l', '--format=\'$version\'', pkg_name],
-                stderr=subprocess.STDOUT).decode('utf-8')
+                stderr=subprocess.STDOUT,
+                universal_newlines=True).decode('utf-8')
         except subprocess.CalledProcessError as e:
             if e.returncode == 3:
                 return None
@@ -306,7 +311,8 @@ class Pacman(Platform):
         try:
             output = subprocess.check_output(
                 ['pacman', '-Q', pkg_name],
-                stderr=subprocess.STDOUT)
+                stderr=subprocess.STDOUT,
+                universal_newlines=True)
         except subprocess.CalledProcessError as e:
             if e.returncode == 1 and e.output.endswith('was not found'):
                 return None
