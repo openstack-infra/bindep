@@ -65,8 +65,9 @@ class TestDepends(TestCase):
     def test_detects_centos(self):
         with self._mock_lsb("CentOS"):
             depends = Depends("")
-            self.assertThat(
-                depends.platform_profiles(), Contains("platform:centos"))
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles, Contains("platform:centos"))
+            self.assertThat(platform_profiles, Contains("platform:redhat"))
 
     def test_detects_rhel(self):
         with self._mock_lsb("RedHatEnterpriseServer"):
@@ -78,12 +79,16 @@ class TestDepends(TestCase):
             self.assertThat(
                 platform_profiles,
                 Contains("platform:rhel"))
+            self.assertThat(
+                platform_profiles,
+                Contains("platform:redhat"))
 
     def test_detects_fedora(self):
         with self._mock_lsb("Fedora"):
             depends = Depends("")
-            self.assertThat(
-                depends.platform_profiles(), Contains("platform:fedora"))
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles, Contains("platform:fedora"))
+            self.assertThat(platform_profiles, Contains("platform:redhat"))
 
     def test_detects_opensuse_project(self):
         with self._mock_lsb("openSUSE Project"):
@@ -93,6 +98,8 @@ class TestDepends(TestCase):
                             Contains("platform:opensuseproject"))
             self.assertThat(platform_profiles,
                             Contains("platform:opensuse"))
+            self.assertThat(platform_profiles,
+                            Contains("platform:suse"))
 
     def test_detects_opensuse_tumbleweed(self):
         with self._mock_lsb("openSUSE Tumbleweed"):
@@ -102,12 +109,15 @@ class TestDepends(TestCase):
                             Contains("platform:opensusetumbleweed"))
             self.assertThat(platform_profiles,
                             Contains("platform:opensuse"))
+            self.assertThat(platform_profiles,
+                            Contains("platform:suse"))
 
     def test_detects_suse_linux(self):
         with self._mock_lsb("SUSE Linux"):
             depends = Depends("")
-            self.assertThat(
-                depends.platform_profiles(), Contains("platform:suselinux"))
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles, Contains("platform:suselinux"))
+            self.assertThat(platform_profiles, Contains("platform:suse"))
 
     def test_detects_ubuntu(self):
         with self._mock_lsb("Ubuntu"):

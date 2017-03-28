@@ -136,6 +136,13 @@ since those entries have the ``platform:rpm`` profile, and
 ``dev-libs/libxml2`` on Gentoo since the entry has the
 ``platform:gentoo`` profile.
 
+Additionally, you can use ``platform:redhat`` or ``platform:suse`` to only
+match RedHat-like or SUSE-like distributions respectively as shown in the
+following example::
+
+    openssh-server [platform:redhat]
+    openssh [platform:suse]
+
 To select Python3 development packages, the OpenStack CI default file uses::
 
     python3-all-dev [platform:dpkg !platform:ubuntu-precise]
