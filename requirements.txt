@@ -1,2 +1,2 @@
-pbr>=1.3
+pbr>=2.0.0  # Apache-2.0
 Parsley
