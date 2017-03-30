@@ -226,6 +226,17 @@ class TestDepends(TestCase):
             [('missing', ['foo'])], depends.check_rules([("foo", [], [])]))
         mock_depend_platform.assert_called_once_with("foo")
 
+    def test_check_rule_missing_version(self):
+        depends = Depends("")
+        depends.platform = mock.MagicMock()
+        mock_depend_platform = self.useFixture(
+            fixtures.MockPatchObject(depends.platform, 'get_pkg_version',
+                                     return_value=None)).mock
+        self.assertEqual(
+            [('missing', ['foo'])],
+            depends.check_rules([("foo", [], [(">=", "1.2.3")])]))
+        mock_depend_platform.assert_called_once_with("foo")
+
     def test_check_rule_present(self):
         depends = Depends("")
         depends.platform = mock.MagicMock()
