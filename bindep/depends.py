@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from locale import getpreferredencoding
 import logging
 import os.path
 from parsley import makeGrammar
@@ -226,7 +227,7 @@ class Depends(object):
     def platform_profiles(self):
         output = subprocess.check_output(
             ["lsb_release", "-cirs"],
-            stderr=subprocess.STDOUT).decode('utf-8')
+            stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         lsbinfo = output.lower().split()
         # NOTE(toabctl): distro can be more than one string (i.e. "SUSE LINUX")
         codename = lsbinfo[len(lsbinfo) - 1:len(lsbinfo)][0]
@@ -279,12 +280,12 @@ class Dpkg(Platform):
             output = subprocess.check_output(
                 ["dpkg-query", "-W", "-f", "${Package} ${Status} ${Version}\n",
                  pkg_name],
-                stderr=subprocess.STDOUT,
-                universal_newlines=True).decode('utf-8')
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         except subprocess.CalledProcessError as e:
+            eoutput = e.output.decode(getpreferredencoding(False))
             if (e.returncode == 1 and
-                (e.output.startswith('dpkg-query: no packages found') or
-                 e.output.startswith('No packages found matching'))):
+                (eoutput.startswith('dpkg-query: no packages found') or
+                 eoutput.startswith('No packages found matching'))):
                 return None
             raise
         # output looks like
@@ -309,11 +310,11 @@ class Rpm(Platform):
                 ["rpm", "--qf",
                  "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
                  pkg_name],
-                stderr=subprocess.STDOUT,
-                universal_newlines=True).decode('utf-8')
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         except subprocess.CalledProcessError as e:
+            eoutput = e.output.decode(getpreferredencoding(False))
             if (e.returncode == 1 and
-                e.output.strip().endswith('is not installed')):
+                eoutput.strip().endswith('is not installed')):
                 return None
             raise
         # output looks like
@@ -335,8 +336,7 @@ class Emerge(Platform):
         try:
             output = subprocess.check_output(
                 ['equery', 'l', '--format=\'$version\'', pkg_name],
-                stderr=subprocess.STDOUT,
-                universal_newlines=True).decode('utf-8')
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         except subprocess.CalledProcessError as e:
             if e.returncode == 3:
                 return None
@@ -358,10 +358,10 @@ class Pacman(Platform):
         try:
             output = subprocess.check_output(
                 ['pacman', '-Q', pkg_name],
-                stderr=subprocess.STDOUT,
-                universal_newlines=True)
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         except subprocess.CalledProcessError as e:
-            if e.returncode == 1 and e.output.endswith('was not found'):
+            eoutput = e.output.decode(getpreferredencoding(False))
+            if e.returncode == 1 and eoutput.endswith('was not found'):
                 return None
             raise
         # output looks like

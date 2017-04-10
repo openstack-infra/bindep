@@ -361,8 +361,7 @@ class TestDpkg(TestCase):
         mock_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
     def test_unknown_package(self):
         platform = Dpkg()
@@ -371,15 +370,14 @@ class TestDpkg(TestCase):
 
         def _side_effect_raise(*args, **kwargs):
             raise subprocess.CalledProcessError(
-                1, [], "dpkg-query: no packages found matching foo\n")
+                1, [], b"dpkg-query: no packages found matching foo\n")
 
         mock_checkoutput.side_effect = _side_effect_raise
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
     def test_installed_version(self):
         platform = Dpkg()
@@ -393,8 +391,7 @@ class TestDpkg(TestCase):
         mocked_checkoutput.assert_called_once_with(
             ["dpkg-query", "-W", "-f",
              "${Package} ${Status} ${Version}\n", "foo"],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
 
 class TestEmerge(TestCase):
@@ -412,8 +409,7 @@ class TestEmerge(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mocked_checkoutput.assert_called_once_with(
             ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
     def test_unknown_package(self):
         platform = Emerge()
@@ -428,8 +424,7 @@ class TestEmerge(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mocked_checkoutput.assert_called_once_with(
             ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
     def test_installed_version(self):
         platform = Emerge()
@@ -439,8 +434,7 @@ class TestEmerge(TestCase):
         self.assertEqual("4.0.0", platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['equery', 'l', '--format=\'$version\'', 'foo'],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
 
 class TestPacman(TestCase):
@@ -450,7 +444,7 @@ class TestPacman(TestCase):
 
         def _side_effect_raise(*args, **kwargs):
             raise subprocess.CalledProcessError(
-                1, [], "error: package 'foo' was not found")
+                1, [], b"error: package 'foo' was not found")
 
         mock_checkoutput = self.useFixture(
             fixtures.MockPatchObject(subprocess, "check_output")).mock
@@ -459,20 +453,18 @@ class TestPacman(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['pacman', '-Q', 'foo'],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
         self.assertEqual(None, platform.get_pkg_version("foo"))
 
     def test_installed_version(self):
         platform = Pacman()
         mock_checkoutput = self.useFixture(
             fixtures.MockPatchObject(subprocess, "check_output")).mock
-        mock_checkoutput.return_value = 'foo 4.0.0-2'
+        mock_checkoutput.return_value = b'foo 4.0.0-2'
         self.assertEqual("4.0.0-2", platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['pacman', '-Q', 'foo'],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
 
 class TestRpm(TestCase):
@@ -485,7 +477,7 @@ class TestRpm(TestCase):
 
         def _side_effect_raise(*args, **kwargs):
             raise subprocess.CalledProcessError(
-                1, [], "package foo is not installed\n")
+                1, [], b"package foo is not installed\n")
 
         mock_checkoutput = self.useFixture(
             fixtures.MockPatchObject(subprocess, 'check_output')).mock
@@ -495,8 +487,7 @@ class TestRpm(TestCase):
             ["rpm", "--qf",
              "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
              "foo"],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
         self.assertEqual(None, platform.get_pkg_version("foo"))
 
     def test_installed_version(self):
@@ -509,8 +500,7 @@ class TestRpm(TestCase):
             ["rpm", "--qf",
              "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
              "foo"],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            stderr=subprocess.STDOUT)
 
 
 class TestEval(TestCase):
