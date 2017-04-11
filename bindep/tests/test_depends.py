@@ -85,11 +85,23 @@ class TestDepends(TestCase):
             self.assertThat(
                 depends.platform_profiles(), Contains("platform:fedora"))
 
-    def test_detects_opensuse(self):
-        with self._mock_lsb("openSUSE"):
+    def test_detects_opensuse_project(self):
+        with self._mock_lsb("openSUSE Project"):
             depends = Depends("")
-            self.assertThat(
-                depends.platform_profiles(), Contains("platform:opensuse"))
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles,
+                            Contains("platform:opensuseproject"))
+            self.assertThat(platform_profiles,
+                            Contains("platform:opensuse"))
+
+    def test_detects_opensuse_tumbleweed(self):
+        with self._mock_lsb("openSUSE Tumbleweed"):
+            depends = Depends("")
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles,
+                            Contains("platform:opensusetumbleweed"))
+            self.assertThat(platform_profiles,
+                            Contains("platform:opensuse"))
 
     def test_detects_suse_linux(self):
         with self._mock_lsb("SUSE Linux"):
@@ -143,8 +155,15 @@ class TestDepends(TestCase):
                 depends.platform_profiles(), Contains("platform:rpm"))
             self.assertIsInstance(depends.platform, Rpm)
 
-    def test_opensuse_implies_rpm(self):
-        with self._mock_lsb("openSUSE"):
+    def test_opensuse_project_implies_rpm(self):
+        with self._mock_lsb("openSUSE Project"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:rpm"))
+            self.assertIsInstance(depends.platform, Rpm)
+
+    def test_opensuse_tumbleweed_implies_rpm(self):
+        with self._mock_lsb("openSUSE Tumbleweed"):
             depends = Depends("")
             self.assertThat(
                 depends.platform_profiles(), Contains("platform:rpm"))
