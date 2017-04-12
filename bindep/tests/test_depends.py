@@ -62,6 +62,12 @@ class TestDepends(TestCase):
         mock_checkoutput.assert_called_once_with(["lsb_release", "-cirs"],
                                                  stderr=subprocess.STDOUT)
 
+    def test_detects_amazon_linux(self):
+        with self._mock_lsb("AmazonAMI"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:amazonami"))
+
     def test_detects_centos(self):
         with self._mock_lsb("CentOS"):
             depends = Depends("")
