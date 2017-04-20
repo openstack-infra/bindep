@@ -251,6 +251,12 @@ class Depends(object):
             elif distro in ["opensuseproject", "opensusetumbleweed"]:
                 # just short alias
                 atoms.add("opensuse")
+            # Family aliases
+            if 'suse' in distro:
+                atoms.add("suse")
+            else:
+                atoms.add("redhat")
+
             atoms.add("rpm")
             self.platform = Rpm()
         elif distro in ["gentoo"]:
