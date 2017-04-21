@@ -206,6 +206,7 @@ class Depends(object):
             installed = self.platform.get_pkg_version(rule[0])
             if not installed:
                 missing.add(rule[0])
+                continue
             for operator, constraint in rule[2]:
                 if not _eval(installed, operator, constraint):
                     incompatible.append(
