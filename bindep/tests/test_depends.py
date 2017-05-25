@@ -105,6 +105,8 @@ class TestDepends(TestCase):
             self.assertThat(platform_profiles,
                             Contains("platform:opensuse"))
             self.assertThat(platform_profiles,
+                            Contains("platform:opensuseproject-14.04"))
+            self.assertThat(platform_profiles,
                             Contains("platform:suse"))
 
     def test_detects_opensuse_tumbleweed(self):
@@ -299,6 +301,7 @@ class TestDepends(TestCase):
             bar [something]
             category/packagename # for gentoo
             baz [platform:this platform:that-those]
+            blaz [platform:rpm !platform:opensuseproject-42.2]
             quux [anotherthing !nothing] <=12
             womp # and a comment
             # a standalone comment and a blank line
