@@ -47,8 +47,9 @@ class TestDepends(TestCase):
         self.assertEqual([], depends.profiles())
 
     def test_platform_profiles_succeeds(self):
-        depends = Depends("")
-        self.assertIsInstance(depends.platform_profiles(), list)
+        with self._mock_lsb('Ubuntu'):
+            depends = Depends("")
+            self.assertIsInstance(depends.platform_profiles(), list)
 
     @contextlib.contextmanager
     def _mock_lsb(self, platform):
