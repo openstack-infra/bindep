@@ -207,6 +207,12 @@ class TestDepends(TestCase):
                 depends.platform_profiles(), Contains("platform:pacman"))
             self.assertIsInstance(depends.platform, Pacman)
 
+    def test_missing_lsb_release(self):
+        with mock.patch('subprocess.check_output') as mock_co:
+            mock_co.side_effect = OSError
+            depends = Depends("")
+            self.assertRaises(OSError, depends.platform_profiles)
+
     def test_finds_profiles(self):
         depends = Depends(dedent("""\
             foo
