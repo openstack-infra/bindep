@@ -319,13 +319,14 @@ class Rpm(Platform):
         try:
             output = subprocess.check_output(
                 ["rpm", "--qf",
-                 "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
-                 pkg_name],
+                 "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n",
+                 "--whatprovides", "-q", pkg_name],
                 stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         except subprocess.CalledProcessError as e:
             eoutput = e.output.decode(getpreferredencoding(False))
             if (e.returncode == 1 and
-                eoutput.strip().endswith('is not installed')):
+                (eoutput.strip().endswith('is not installed') or
+                 (eoutput.strip().startswith('no package provides')))):
                 return None
             raise
         # output looks like

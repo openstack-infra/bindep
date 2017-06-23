@@ -531,8 +531,8 @@ class TestRpm(TestCase):
         self.assertEqual(None, platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ["rpm", "--qf",
-             "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
-             "foo"],
+             "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n",
+             "--whatprovides", "-q", "foo"],
             stderr=subprocess.STDOUT)
         self.assertEqual(None, platform.get_pkg_version("foo"))
 
@@ -544,8 +544,8 @@ class TestRpm(TestCase):
         self.assertEqual("4.0.0-0.el6", platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ["rpm", "--qf",
-             "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n", "-q",
-             "foo"],
+             "%{NAME} %|EPOCH?{%{EPOCH}:}|%{VERSION}-%{RELEASE}\n",
+             "--whatprovides", "-q", "foo"],
             stderr=subprocess.STDOUT)
 
 
