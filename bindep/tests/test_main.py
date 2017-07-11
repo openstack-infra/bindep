@@ -41,6 +41,9 @@ class MainFixture(Fixture):
         self.path = self.useFixture(TempDir()).path
         self.addCleanup(os.chdir, self.path)
         os.chdir(self.path)
+        fake_lsb = b'Ubuntu\n14.04\nTrusty'
+        self.useFixture(MonkeyPatch('subprocess.check_output',
+                                    lambda *a, **k: fake_lsb))
 
 
 class TestMain(TestCase):
