@@ -226,9 +226,14 @@ class Depends(object):
         return sorted(profiles)
 
     def platform_profiles(self):
-        output = subprocess.check_output(
-            ["lsb_release", "-cirs"],
-            stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
+        try:
+            output = subprocess.check_output(
+                ["lsb_release", "-cirs"],
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
+        except OSError:
+            log = logging.getLogger(__name__)
+            log.error('Unable to execute lsb_release. Is it installed?')
+            raise
         lsbinfo = output.lower().split()
         # NOTE(toabctl): distro can be more than one string (i.e. "SUSE LINUX")
         codename = lsbinfo[len(lsbinfo) - 1:len(lsbinfo)][0]
