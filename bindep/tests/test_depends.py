@@ -350,6 +350,65 @@ class TestDepends(TestCase):
             set(r[0] for r in depends.active_rules(['platform:rpm', 'test'])),
             Equals({"install5", "install6", "install8", "install9"}))
 
+    def test_list_all(self):
+        depends = Depends(dedent("""\
+            install1
+            install2 [test]
+            install3 [platform:rpm]
+            install4 [platform:dpkg]
+            install5 [quark]
+            install6 [platform:dpkg test]
+            install7 [quark test]
+            install8 [platform:dpkg platform:rpm]
+            install9 [platform:dpkg platform:rpm test]
+            installA [!platform:dpkg]
+            installB [!platform:dpkg test]
+            installC [!platform:dpkg !test]
+            installD [platform:dpkg !test]
+            installE [platform:dpkg !platform:rpm]
+            installF [platform:dpkg !platform:rpm test]
+            installG [!platform:dpkg !platform:rpm]
+            installH [!platform:dpkg !platform:rpm test]
+            installI [!platform:dpkg !platform:rpm !test]
+            installJ [platform:dpkg !platform:rpm !test]
+            """))
+
+        rules_dpkg = depends.active_rules(['platform:dpkg'])
+        result_dpkg = set(r[0] for r in rules_dpkg)
+        self.assertEqual(result_dpkg,
+                         set(depends.list_all_packages(rules_dpkg,
+                             output_format='newline')))
+        self.assertEqual(result_dpkg,
+                         set(depends.list_all_packages(rules_dpkg,
+                             output_format='csv')))
+
+        rules_dpkg_test = depends.active_rules(['platform:dpkg', 'test'])
+        result_dpkg_test = set(r[0] for r in rules_dpkg_test)
+        self.assertEqual(result_dpkg_test, set(depends.list_all_packages(
+                                               rules_dpkg_test,
+                                               output_format='newline')))
+        self.assertEqual(result_dpkg_test, set(depends.list_all_packages(
+                                               rules_dpkg_test,
+                                               output_format='csv')))
+
+        rules_rpm = depends.active_rules(['platform:rpm'])
+        result_rpm = set(r[0] for r in rules_rpm)
+        self.assertEqual(result_rpm, set(depends.list_all_packages(rules_rpm,
+                                         output_format='newline')))
+        self.assertEqual(result_rpm, set(depends.list_all_packages(rules_rpm,
+                                         output_format='csv')))
+
+        rules_rpm_test = depends.active_rules(['platform:rpm', 'test'])
+        result_rpm_test = set(r[0] for r in rules_rpm_test)
+        self.assertEqual(result_rpm_test,
+                         set(depends.list_all_packages(
+                             rules_rpm_test,
+                             output_format='newline')))
+        self.assertEqual(result_rpm_test,
+                         set(depends.list_all_packages(
+                             rules_rpm_test,
+                             output_format='csv')))
+
     def test_platforms(self):
         depends = Depends(dedent("""\
             install1

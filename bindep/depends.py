@@ -194,6 +194,25 @@ class Depends(object):
                 result.append(rule)
         return result
 
+    def list_all_packages(self, rules, output_format='newline'):
+        """Print a list of all packages that are required on this platform
+        according to the passed in rules. This is useful if we want to build
+        RPMs based on the deps listed in bindeps.txt
+
+        :param rules: A list of rules, as returned by active_rules.
+        :param output_format: The format to print the output in. Currently
+        we support newline format which will print 1 package per line, and
+        csv format which prints a csv list.
+        :return: List of all required packages regardless of whether they are
+        missing.
+        """
+        packages_list = [rule[0] for rule in rules]
+        if output_format == 'csv':
+            logging.info(','.join(packages_list))
+        elif output_format == 'newline':
+            logging.info('\n'.join(packages_list))
+        return packages_list
+
     def check_rules(self, rules):
         """Evaluate rules against the local environment.
 
