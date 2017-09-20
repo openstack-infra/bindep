@@ -142,12 +142,10 @@ class TestDepends(TestCase):
             self.assertThat(platform_profiles,
                             Contains("platform:suse"))
 
-    def test_detects_opensuse_tumbleweed(self):
-        with self._mock_lsb("openSUSE Tumbleweed"):
+    def test_detects_opensuse(self):
+        with self._mock_lsb("openSUSE"):
             depends = Depends("")
             platform_profiles = depends.platform_profiles()
-            self.assertThat(platform_profiles,
-                            Contains("platform:opensusetumbleweed"))
             self.assertThat(platform_profiles,
                             Contains("platform:opensuse"))
             self.assertThat(platform_profiles,
@@ -213,8 +211,8 @@ class TestDepends(TestCase):
                 depends.platform_profiles(), Contains("platform:rpm"))
             self.assertIsInstance(depends.platform, Rpm)
 
-    def test_opensuse_tumbleweed_implies_rpm(self):
-        with self._mock_lsb("openSUSE Tumbleweed"):
+    def test_opensuse_implies_rpm(self):
+        with self._mock_lsb("openSUSE"):
             depends = Depends("")
             self.assertThat(
                 depends.platform_profiles(), Contains("platform:rpm"))
