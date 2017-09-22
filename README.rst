@@ -92,6 +92,12 @@ match on the other selectors. As an example, ``[platform:rpm test]``
 would only install a package on a RPM platform if the test selector is
 used.
 
+Profiles can also be grouped together using ``()``. In a group, all profiles
+must match for the group to match. Given the example
+``[test (ceph glance !lvm)]``, to select the package you must either specify
+``test`` OR (``ceph`` AND ``glance`` AND NOT ``lvm``). Platform selectors will
+not work inside of the group.
+
 Version constraints are a comma separated list of constraints where each
 constraint is  (== | < | <= | >= | > | !=) VERSION, and the constraints are ANDed
 together (the same as pip requirements version constraints).
@@ -160,3 +166,12 @@ To select the curl package, the OpenStack CI default file uses::
 
 This selects the ``curl`` package on all distributions with the
 exception of Gentoo, and selects ``net-misc/curl`` on Gentoo only.
+
+To select a package based on a group of profiles::
+
+    ceph-common [ceph]
+    python-rbd [(ceph glance)]
+
+This selects the ``ceph-common`` package when the profile ``ceph`` is
+specified. However, it will only select the ``python-rbd`` package when both
+``ceph`` and ``glance`` profiles are active.

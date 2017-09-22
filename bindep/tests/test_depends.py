@@ -236,6 +236,34 @@ class TestDepends(TestCase):
             [("foo", [(False, "bar"), (True, "baz"), (True, "quux")], [])],
             depends._rules)
 
+    def test_whitespace(self):
+        depends = Depends("foo [ ( bar !baz ) quux ]\n")
+        self.assertEqual(
+            [("foo", [[(True, "bar"), (False, "baz")], (True, "quux")], [])],
+            depends._rules)
+
+    def test_group_selectors(self):
+        depends = Depends("foo [(bar !baz) quux]\n")
+        self.assertEqual(
+            [("foo", [[(True, "bar"), (False, "baz")], (True, "quux")], [])],
+            depends._rules)
+
+    def test_multiple_group_selectors(self):
+        depends = Depends("foo [(bar baz) (baz quux)]\n")
+        parsed_profiles = [
+            [(True, "bar"), (True, "baz")],
+            [(True, "baz"), (True, "quux")],
+        ]
+        self.assertEqual(
+            [("foo", parsed_profiles, [])],
+            depends._rules)
+
+    def test_single_profile_group_selectors(self):
+        depends = Depends("foo [(bar) (!baz)]\n")
+        self.assertEqual(
+            [("foo", [[(True, "bar")], [(False, "baz")]], [])],
+            depends._rules)
+
     def test_versions(self):
         depends = Depends("foo <=1,!=2\n")
         self.assertEqual(

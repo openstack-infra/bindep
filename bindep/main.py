@@ -27,7 +27,7 @@ logging.basicConfig(
 
 
 def main(depends=None):
-    usage = "Usage: %prog [options] [profile]"
+    usage = "Usage: %prog [options] [profile]..."
     parser = optparse.OptionParser(
         usage=usage, version="%%prog %s" % bindep.version)
     parser.add_option(

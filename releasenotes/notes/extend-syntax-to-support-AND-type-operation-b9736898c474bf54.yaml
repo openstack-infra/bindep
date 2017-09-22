@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    New syntax extention allows declaring a group of profiles which must be
+    specified to enable the package. Using the syntax as follows
+
+    package1 [(profile1 profile2)]
+
+    To install 'package1' you must declare profile1 AND profile2

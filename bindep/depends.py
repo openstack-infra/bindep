@@ -47,7 +47,9 @@ lowercase = ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'
 name = letterOrDigit:start (letterOrDigit|'.'|'+'|'-'|'_'|'/')+:rest
 ws = ' '+
 profile = ('!'?:neg <(lowercase|digit|':'|'-'|'.')+>:name) -> (neg!='!', name)
-selector = ws '[' profile:p1 (ws profile)*:p2 ']' -> [p1] + p2
+profiles = '(' (ws? profile)*:p ws? ')' -> p
+group = profiles | profile
+selector = ws '[' (ws? group)*:p ws? ']' -> p
 oneversion = <('<=' | '<' | '!=' | '==' | '>=' | '>')>:rel <debversion>:v -> (
     rel, v)
 version = ws oneversion:v1 (',' oneversion)*:v2 -> [v1] + v2
@@ -138,7 +140,11 @@ class Depends(object):
         """
         platform = []
         user = []
-        for sense, profile in rule[1]:
+        for group in rule[1]:
+            if isinstance(group, list):
+                user.append(group)
+                continue
+            sense, profile = group
             if profile.startswith("platform:"):
                 platform.append((sense, profile))
             else:
@@ -160,7 +166,15 @@ class Depends(object):
         positive = False
         match_found = False
         negative = False
-        for sense, profile in partition_rule:
+        for group in partition_rule:
+            if isinstance(group, list):
+                if self._match_all(group, profiles):
+                    match_found = True
+                    continue
+                else:
+                    negative = True
+                    break
+            sense, profile = group
             if sense:
                 positive = True
                 if profile in profiles:
@@ -172,6 +186,19 @@ class Depends(object):
         if not negative and (match_found or not positive):
                 return True
         return False
+
+    def _match_all(self, partition_rules, profiles):
+        """Evaluate rules. Do they all match the profiles?
+
+        :return Result True if all profiles match else False
+        """
+        def matches(sense, profile, profiles):
+            return sense if profile in profiles else not sense
+
+        for sense, profile in partition_rules:
+            if not matches(sense, profile, profiles):
+                return False
+        return True
 
     def active_rules(self, profiles):
         """Return the rules active given profiles.
