@@ -1,0 +1,60 @@
+- job:
+    name: bindep-fallback
+    description: |
+      Check that bindep can install packages from
+      openstack-infra/project-config/jenkins/data/bindep-fallback.txt.
+    roles:
+      - zuul: openstack-infra/zuul-jobs
+    run: playbooks/bindep-fallback/run.yaml
+    vars:
+      zuul_work_dir: "{{ zuul.project.src_dir }}"
+      zuul_work_virtualenv: "{{ ansible_user_dir }}/.venv"
+
+- job:
+    name: bindep-fallback-centos-7
+    parent: bindep-fallback
+    nodeset: centos-7
+
+- job:
+    name: bindep-fallback-fedora-26
+    parent: bindep-fallback
+    nodeset: fedora-26
+
+- job:
+    name: bindep-fallback-debian-jessie
+    parent: bindep-fallback
+    nodeset: debian-jessie
+
+- job:
+    name: bindep-fallback-opensuse-423
+    parent: bindep-fallback
+    nodeset: opensuse-423
+
+- job:
+    name: bindep-fallback-ubuntu-trusty
+    parent: bindep-fallback
+    nodeset: ubuntu-trusty
+
+- job:
+    name: bindep-fallback-ubuntu-xenial
+    parent: bindep-fallback
+    nodeset: ubuntu-xenial
+
+- project:
+    name: openstack-infra/bindep
+    check:
+      jobs:
+        - bindep-fallback-centos-7
+        - bindep-fallback-debian-jessie
+        - bindep-fallback-fedora-26
+        - bindep-fallback-opensuse-423
+        - bindep-fallback-ubuntu-trusty
+        - bindep-fallback-ubuntu-xenial
+    gate:
+      jobs:
+        - bindep-fallback-centos-7
+        - bindep-fallback-debian-jessie
+        - bindep-fallback-fedora-26
+        - bindep-fallback-opensuse-423
+        - bindep-fallback-ubuntu-trusty
+        - bindep-fallback-ubuntu-xenial

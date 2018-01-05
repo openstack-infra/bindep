@@ -1,0 +1,20 @@
+- hosts: all
+  pre_tasks:
+    - name: Install requirements
+      pip:
+        chdir: "{{ zuul_work_dir }}"
+        virtualenv: "{{ zuul_work_virtualenv }}"
+        requirements: requirements.txt
+
+    - name: Install the project from source
+      pip:
+        chdir: "{{ zuul_work_dir }}"
+        virtualenv: "{{ zuul_work_virtualenv }}"
+        name: .
+
+  roles:
+    - role: bindep
+      bindep_profile: test
+      bindep_command: "{{ zuul_work_virtualenv }}/bin/bindep"
+      # Define the global file so that no local file gets used.
+      bindep_file: /usr/local/jenkins/common_data/bindep-fallback.txt
