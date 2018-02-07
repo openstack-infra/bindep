@@ -165,15 +165,15 @@ class Depends(object):
         # selectors we need a match.
         positive = False
         match_found = False
+        group_found = False
+        group_match_found = False
         negative = False
         for group in partition_rule:
             if isinstance(group, list):
+                group_found = True
                 if self._match_all(group, profiles):
-                    match_found = True
-                    continue
-                else:
-                    negative = True
-                    break
+                    group_match_found = True
+                continue
             sense, profile = group
             if sense:
                 positive = True
@@ -183,7 +183,10 @@ class Depends(object):
                 if profile in profiles:
                     negative = True
                     break
-        if not negative and (match_found or not positive):
+        if not negative:
+            if group_match_found or match_found:
+                return True
+            if not group_found and not positive:
                 return True
         return False
 

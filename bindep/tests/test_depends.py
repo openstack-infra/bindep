@@ -236,6 +236,19 @@ class TestDepends(TestCase):
             [("foo", [(False, "bar"), (True, "baz"), (True, "quux")], [])],
             depends._rules)
 
+    def test_single_group_only(self):
+        depends = Depends("foo [(bar)]\n")
+        self.assertTrue(depends._evaluate(depends._rules[0][1], ["bar"]))
+        self.assertFalse(depends._evaluate(depends._rules[0][1], ["baz"]))
+
+    def test_multiple_groups_only(self):
+        depends = Depends("foo [(bar baz) (quux)]\n")
+        self.assertTrue(depends._evaluate(depends._rules[0][1],
+                                          ["bar", "baz"]))
+        self.assertTrue(depends._evaluate(depends._rules[0][1], ["quux"]))
+        self.assertFalse(depends._evaluate(depends._rules[0][1], ["baz"]))
+        self.assertFalse(depends._evaluate(depends._rules[0][1], ["bar"]))
+
     def test_whitespace(self):
         depends = Depends("foo [ ( bar !baz ) quux ]\n")
         self.assertEqual(
