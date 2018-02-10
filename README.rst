@@ -120,7 +120,7 @@ bindep would select the ``libffi6`` package in all cases and if the
 would be selected.
 
 The following content gives some examples as used in the `default bindep file
-<http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/data/bindep-fallback.txt>`_
+<http://git.openstack.org/cgit/openstack-infra/project-config/tree/nodepool/elements/bindep-fallback.txt>`_
 that OpenStack CI takes if no ``bindep.txt`` file exists for setup of
 some jobs. The examples only use the automatically defined profiles
 like ``platform:dpkg`` which is defined on Debian based systems.
