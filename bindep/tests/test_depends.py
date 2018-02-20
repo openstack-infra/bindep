@@ -90,6 +90,20 @@ class TestDepends(TestCase):
                 platform_profiles,
                 Contains("platform:redhat"))
 
+    def test_detects_rhel_workstation(self):
+        with self._mock_lsb("RedHatEnterpriseWorkstation"):
+            depends = Depends("")
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(
+                platform_profiles,
+                Contains("platform:redhatenterpriseworkstation"))
+            self.assertThat(
+                platform_profiles,
+                Contains("platform:rhel"))
+            self.assertThat(
+                platform_profiles,
+                Contains("platform:redhat"))
+
     def test_detects_fedora(self):
         with self._mock_lsb("Fedora"):
             depends = Depends("")
