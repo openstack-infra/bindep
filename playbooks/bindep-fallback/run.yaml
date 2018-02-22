@@ -17,4 +17,4 @@
       bindep_profile: test
       bindep_command: "{{ zuul_work_virtualenv }}/bin/bindep"
       # Define the global file so that no local file gets used.
-      bindep_file: /usr/local/jenkins/common_data/bindep-fallback.txt
+      bindep_file: /usr/local/bindep-fallback/bindep-fallback.txt
