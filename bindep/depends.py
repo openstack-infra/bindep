@@ -19,6 +19,7 @@ from locale import getpreferredencoding
 import logging
 import os.path
 from parsley import makeGrammar
+import platform
 import subprocess
 import sys
 
@@ -275,6 +276,13 @@ class Depends(object):
         return sorted(profiles)
 
     def platform_profiles(self):
+        if platform.system() == 'Darwin':
+            atoms = set(['darwin'])
+            # detect available macos package managers
+            if os.system('which brew >/dev/null') == 0:
+                atoms.add('brew')
+                self.platform = Brew()
+            return ["platform:%s" % (atom,) for atom in sorted(atoms)]
         try:
             output = subprocess.check_output(
                 ["lsb_release", "-cirs"],
@@ -334,6 +342,27 @@ class Platform(object):
         :return: None if pkg_name is not installed, or a version otherwise.
         """
         raise NotImplementedError(self.get_pkg_version)
+
+
+class Brew(Platform):
+    """brew specific platform implementation."""
+
+    def get_pkg_version(self, pkg_name):
+        try:
+            output = subprocess.check_output(
+                ['brew', 'list', '--versions',
+                 pkg_name],
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
+        except subprocess.CalledProcessError as e:
+            if (e.returncode == 1):
+                return None
+            raise
+        # output looks like
+        # git 2.15.1_1 2.15.0
+        output = output.strip()
+        elements = output.split(' ')[1:]
+        # brew supports multiple versions, we will only return the first one
+        return elements[0]
 
 
 class Dpkg(Platform):

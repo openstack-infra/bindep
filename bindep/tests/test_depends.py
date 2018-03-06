@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import contextlib
+import platform
 import subprocess
 from textwrap import dedent
 
@@ -63,6 +64,17 @@ class TestDepends(TestCase):
         mock_checkoutput.assert_called_once_with(["lsb_release", "-cirs"],
                                                  stderr=subprocess.STDOUT)
 
+    @contextlib.contextmanager
+    def _mock_platform_darwin(self, system):
+        r_val = system
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(
+                platform,
+                'system',
+                return_value=r_val)).mock
+        yield mock_checkoutput
+        mock_checkoutput.assert_called_once_with()
+
     def test_detects_amazon_linux(self):
         with self._mock_lsb("AmazonAMI"):
             depends = Depends("")
@@ -75,6 +87,12 @@ class TestDepends(TestCase):
             platform_profiles = depends.platform_profiles()
             self.assertThat(platform_profiles, Contains("platform:centos"))
             self.assertThat(platform_profiles, Contains("platform:redhat"))
+
+    def test_detects_darwin(self):
+        with self._mock_platform_darwin("Darwin"):
+            depends = Depends("")
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles, Contains("platform:darwin"))
 
     def test_detects_rhel(self):
         with self._mock_lsb("RedHatEnterpriseServer"):
