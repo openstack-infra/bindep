@@ -1,0 +1,12 @@
+---
+upgrade:
+  - |
+    Bindep now depends on the distro python library to determine details
+    about the current platform. This library looks at both /etc/os-release
+    and lsb_release to find platform info. The os-release file data is
+    preferred and at times has slightly different data than lsb_release.
+    Every effort has been made to make this transition backward compatible
+    but some things may have been missed.
+
+    The motivation for this change is that not all distros have lsb_release
+    available and we can let the distro library sort that out for us.
