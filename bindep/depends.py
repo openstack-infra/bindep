@@ -384,6 +384,8 @@ class Depends(object):
         elif distro_id in ["arch"]:
             atoms.add("pacman")
             self.platform = Pacman()
+        else:
+            self.platform = Unknown()
         return ["platform:%s" % (atom,) for atom in sorted(atoms)]
 
 
@@ -396,6 +398,13 @@ class Platform(object):
         :return: None if pkg_name is not installed, or a version otherwise.
         """
         raise NotImplementedError(self.get_pkg_version)
+
+
+class Unknown(Platform):
+    """Unknown platform implementation. Raises error."""
+
+    def get_pkg_version(self, pkg_name):
+        raise Exception("Uknown package manager for current platform.")
 
 
 class Brew(Platform):

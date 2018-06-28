@@ -25,6 +25,7 @@ import distro
 import fixtures
 import mock
 import ometa.runtime
+from testtools import ExpectedException
 from testtools.matchers import Contains
 from testtools.matchers import Equals
 from testtools.matchers import MatchesSetwise
@@ -92,6 +93,16 @@ class TestDepends(TestCase):
                 return_value=r_val)).mock
         yield mock_checkoutput
         mock_checkoutput.assert_called_once_with()
+
+    def test_detects_unknown(self):
+        with DistroFixture("Unknown"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:unknown"))
+            with ExpectedException(Exception,
+                                   "Uknown package manager for "
+                                   "current platform."):
+                depends.platform.get_pkg_version('x')
 
     def test_detects_amazon_linux(self):
         with DistroFixture("AmazonAMI"):

@@ -1,0 +1,10 @@
+NAME="Unknown"
+VERSION="12345"
+ID=unknown
+ID_LIKE=unknown
+PRETTY_NAME="Not a real distro 12345"
+VERSION_ID="12345"
+HOME_URL="https://example.com"
+SUPPORT_URL="https://help.example.com"
+BUG_REPORT_URL="https://bugs.example.com"
+VERSION_CODENAME=Testing
