@@ -37,6 +37,7 @@ from bindep.depends import Dpkg
 from bindep.depends import Emerge
 from bindep.depends import Pacman
 from bindep.depends import Rpm
+from bindep.depends import Apk
 
 
 # NOTE(notmorgan): In python3 subprocess.check_output returns bytes not
@@ -195,6 +196,12 @@ class TestDepends(TestCase):
             self.assertThat(
                 depends.platform_profiles(), Contains("platform:ubuntu"))
 
+    def test_detects_alpine(self):
+        with DistroFixture("Alpine"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:alpine"))
+
     def test_detects_release(self):
         with DistroFixture("Ubuntu"):
             depends = Depends("")
@@ -262,6 +269,13 @@ class TestDepends(TestCase):
             self.assertThat(
                 depends.platform_profiles(), Contains("platform:dpkg"))
             self.assertIsInstance(depends.platform, Dpkg)
+
+    def test_alpine_implies_apk(self):
+        with DistroFixture("Alpine"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:apk"))
+            self.assertIsInstance(depends.platform, Apk)
 
     def test_arch_implies_pacman(self):
         with DistroFixture("Arch"):
@@ -675,6 +689,36 @@ class TestPacman(TestCase):
         self.assertEqual("4.0.0-2", platform.get_pkg_version("foo"))
         mock_checkoutput.assert_called_once_with(
             ['pacman', '-Q', 'foo'],
+            stderr=subprocess.STDOUT)
+
+
+class TestApk(TestCase):
+
+    def test_unknown_package(self):
+        platform = Apk()
+
+        def _side_effect_raise(*args, **kwargs):
+            raise subprocess.CalledProcessError(
+                1, [], b"Installed: Available:")
+
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, "check_output")).mock
+        mock_checkoutput.side_effect = _side_effect_raise
+
+        self.assertEqual(None, platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
+            ['apk', 'version', 'foo'],
+            stderr=subprocess.STDOUT)
+        self.assertEqual(None, platform.get_pkg_version("foo"))
+
+    def test_installed_version(self):
+        platform = Apk()
+        mock_checkoutput = self.useFixture(
+            fixtures.MockPatchObject(subprocess, "check_output")).mock
+        mock_checkoutput.return_value = b'Insd: Able: foo-4.0.0-r1 = 4.0.0-r1'
+        self.assertEqual('4.0.0-r1', platform.get_pkg_version("foo"))
+        mock_checkoutput.assert_called_once_with(
+            ['apk', 'version', 'foo'],
             stderr=subprocess.STDOUT)
 
 

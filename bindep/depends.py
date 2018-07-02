@@ -384,6 +384,9 @@ class Depends(object):
         elif distro_id in ["arch"]:
             atoms.add("pacman")
             self.platform = Pacman()
+        elif distro_id in ["alpine"]:
+            atoms.add("apk")
+            self.platform = Apk()
         else:
             self.platform = Unknown()
         return ["platform:%s" % (atom,) for atom in sorted(atoms)]
@@ -528,6 +531,30 @@ class Pacman(Platform):
         # version
         elements = output.strip().split(' ')
         return elements[1]
+
+
+class Apk(Platform):
+    """apk (Alpine Linux) specific implementation.
+
+    This shells out to apk
+    """
+
+    def get_pkg_version(self, pkg_name):
+        try:
+            output = subprocess.check_output(
+                ['apk', 'version', pkg_name],
+                stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 1:
+                return None
+            raise
+        # output looks like
+        # version
+        output = output.strip()
+        elements = output.split()
+        if len(elements) < 4:
+            return None
+        return elements[4]
 
 
 def _eval_diff(operator, diff):
