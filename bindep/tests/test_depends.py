@@ -67,6 +67,11 @@ class TestDepends(TestCase):
         depends = Depends("")
         self.assertEqual([], depends.profiles())
 
+    def test_3tuple(self):
+        depends = Depends(u"erlang [(infra rabbitmq hipe)]\n")
+        self.assertEqual(sorted([u'infra', u'rabbitmq', u'hipe']),
+                         depends.profiles())
+
     def test_platform_profiles_succeeds(self):
         with DistroFixture('Ubuntu'):
             depends = Depends("")
