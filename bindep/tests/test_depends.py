@@ -183,6 +183,15 @@ class TestDepends(TestCase):
             self.assertThat(platform_profiles,
                             Contains("platform:suse"))
 
+    def test_detects_opensuse_leap15(self):
+        with DistroFixture("openSUSEleap15"):
+            depends = Depends("")
+            platform_profiles = depends.platform_profiles()
+            self.assertThat(platform_profiles,
+                            Contains("platform:opensuse"))
+            self.assertThat(platform_profiles,
+                            Contains("platform:suse"))
+
     def test_detects_suse_linux(self):
         with DistroFixture("SLES"):
             depends = Depends("")
@@ -251,6 +260,13 @@ class TestDepends(TestCase):
 
     def test_opensuse_implies_rpm(self):
         with DistroFixture("openSUSEleap"):
+            depends = Depends("")
+            self.assertThat(
+                depends.platform_profiles(), Contains("platform:rpm"))
+            self.assertIsInstance(depends.platform, Rpm)
+
+    def test_opensuse_leap15_implies_rpm(self):
+        with DistroFixture("openSUSEleap15"):
             depends = Depends("")
             self.assertThat(
                 depends.platform_profiles(), Contains("platform:rpm"))
