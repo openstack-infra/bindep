@@ -1,5 +1,9 @@
 - hosts: all
-  pre_tasks:
+  vars:
+    bindep_profile: test
+    # Define the global file so that no local file gets used.
+    bindep_file: /usr/local/bindep-fallback/bindep-fallback.txt
+  tasks:
     - name: Install requirements
       pip:
         chdir: "{{ zuul_work_dir }}"
@@ -12,9 +16,15 @@
         virtualenv: "{{ zuul_work_virtualenv }}"
         name: .
 
-  roles:
-    - role: bindep
-      bindep_profile: test
-      bindep_command: "{{ zuul_work_virtualenv }}/bin/bindep"
-      # Define the global file so that no local file gets used.
-      bindep_file: /usr/local/bindep-fallback/bindep-fallback.txt
+    - name: Run bindep with the file
+      command: "{{ zuul_work_virtualenv }}/bin/bindep -b -f {{ bindep_file }} {{ bindep_profile }}"
+      register: _bindep_output
+      changed_when: false
+      failed_when: false
+
+    - name: Install distro packages from bindep
+      package:
+        name: "{{ _bindep_output.stdout_lines }}"
+        state: present
+      become: yes
+      when: _bindep_output.stdout_lines
