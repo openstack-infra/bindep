@@ -273,8 +273,14 @@ class Depends(object):
     def profiles(self):
         profiles = set()
         for rule in self._rules:
-            for _, selector in rule[1]:
-                profiles.add(selector)
+            # Partition rules, but keep only the user ones
+            _, user_profiles = self._partition(rule)
+            for profile in user_profiles:
+                # Flatten a series of AND conditionals in a user rule
+                if isinstance(profile, list):
+                    profiles.update([rule[1] for rule in profile])
+                elif isinstance(profile, tuple):
+                    profiles.add(profile[1])
         return sorted(profiles)
 
     def codenamebits(self, distro_id, codename):
