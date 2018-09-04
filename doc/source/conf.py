@@ -24,8 +24,14 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinxcontrib.programoutput',
-    'oslosphinx'
+    'openstackdocstheme'
 ]
+
+# Setting for openstackdocstheme
+html_theme = 'openstackdocs'
+repository_name = 'openstack-infra/bindep'
+bug_tag = ''
+use_storyboard = True
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.

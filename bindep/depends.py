@@ -234,10 +234,10 @@ class Depends(object):
 
         :param rules: A list of rules, as returned by active_rules.
         :param output_format: The format to print the output in. Currently
-        we support newline format which will print 1 package per line, and
-        csv format which prints a csv list.
+          we support newline format which will print 1 package per line, and
+          csv format which prints a csv list.
         :return: List of all required packages regardless of whether they are
-        missing.
+          missing.
         """
         packages_list = [rule[0] for rule in rules]
         if output_format == 'csv':
