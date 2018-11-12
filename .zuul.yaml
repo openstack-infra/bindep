@@ -21,6 +21,11 @@
     nodeset: opensuse-423
 
 - job:
+    name: bindep-fallback-opensuse-150
+    parent: bindep-fallback
+    nodeset: opensuse-150
+
+- job:
     name: bindep-fallback-ubuntu-trusty
     parent: bindep-fallback
     nodeset: ubuntu-trusty
@@ -35,11 +40,13 @@
       jobs:
         - bindep-fallback-centos-7
         - bindep-fallback-opensuse-423
+        - bindep-fallback-opensuse-150
         - bindep-fallback-ubuntu-trusty
         - bindep-fallback-ubuntu-xenial
     gate:
       jobs:
         - bindep-fallback-centos-7
         - bindep-fallback-opensuse-423
+        - bindep-fallback-opensuse-150
         - bindep-fallback-ubuntu-trusty
         - bindep-fallback-ubuntu-xenial
