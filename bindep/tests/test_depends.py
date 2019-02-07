@@ -448,6 +448,15 @@ class TestDepends(TestCase):
             """))
         self.assertEqual(len(depends.active_rules(['default'])), 3)
 
+    def test_parser_accepts_full_path_to_tools(self):
+        # at least yum/dnf allow these instead of mentioning rpm names
+        depends = Depends(dedent("""\
+            /usr/bin/bash
+            """))
+        self.assertEqual(
+            [("/usr/bin/bash", [], [])],
+            depends.active_rules(["default"]))
+
     def test_parser_invalid(self):
         self.assertRaises(ometa.runtime.ParseError,
                           lambda: Depends("foo [platform:bar@baz]\n"))
