@@ -16,6 +16,11 @@
     nodeset: centos-7
 
 - job:
+    name: bindep-fedora-latest
+    parent: bindep-base
+    nodeset: fedora-latest
+
+- job:
     name: bindep-opensuse-150
     parent: bindep-base
     nodeset: opensuse-150
@@ -39,6 +44,7 @@
     check:
       jobs:
         - bindep-centos-7
+        - bindep-fedora-latest
         - bindep-opensuse-150
         - bindep-opensuse-423
         - bindep-ubuntu-trusty
@@ -46,6 +52,7 @@
     gate:
       jobs:
         - bindep-centos-7
+        - bindep-fedora-latest
         - bindep-opensuse-150
         - bindep-opensuse-423
         - bindep-ubuntu-trusty
