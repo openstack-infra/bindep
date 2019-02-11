@@ -119,12 +119,6 @@ bindep would select the ``libffi6`` package in all cases and if the
 ``test`` profile gets choosen with ``bindep test``, then both packages
 would be selected.
 
-The following content gives some examples as used in the `default bindep file
-<http://git.openstack.org/cgit/openstack-infra/project-config/tree/nodepool/elements/bindep-fallback.txt>`_
-that OpenStack CI takes if no ``bindep.txt`` file exists for setup of
-some jobs. The examples only use the automatically defined profiles
-like ``platform:dpkg`` which is defined on Debian based systems.
-
 If a repository needs for deployment the libxml2 development
 libraries for support of Debian, Gentoo, and RPM based distros, the
 ``bindep.txt`` file can contain::
@@ -175,3 +169,8 @@ To select a package based on a group of profiles::
 This selects the ``ceph-common`` package when the profile ``ceph`` is
 specified. However, it will only select the ``python-rbd`` package when both
 ``ceph`` and ``glance`` profiles are active.
+
+For a more comprehensive example check bindep.txt_ file that is used to
+test bindep itself on multiple platforms.
+
+.. _bindep.txt: http://git.openstack.org/cgit/openstack-infra/bindep/tree/bindep/tests/bindep.txt
