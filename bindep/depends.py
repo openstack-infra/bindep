@@ -530,7 +530,7 @@ class Pacman(Platform):
                 stderr=subprocess.STDOUT).decode(getpreferredencoding(False))
         except subprocess.CalledProcessError as e:
             eoutput = e.output.decode(getpreferredencoding(False))
-            if e.returncode == 1 and eoutput.endswith('was not found'):
+            if e.returncode == 1 and eoutput.strip().endswith('was not found'):
                 return None
             raise
         # output looks like
