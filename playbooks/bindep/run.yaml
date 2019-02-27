@@ -1,8 +1,6 @@
 - hosts: all
   vars:
     bindep_profile: test
-    # Define the global file so that no local file gets used.
-    bindep_file: /usr/local/bindep-fallback/bindep-fallback.txt
   tasks:
     - name: Install requirements
       pip:
@@ -17,7 +15,10 @@
         name: .
 
     - name: Run bindep with the file
-      command: "{{ zuul_work_virtualenv }}/bin/bindep -b -f {{ bindep_file }} {{ bindep_profile }}"
+      command: >
+        {{ zuul_work_virtualenv }}/bin/bindep -b -f
+        "{{ ansible_user_dir }}/{{ zuul.projects['git.openstack.org/openstack-infra/bindep'].src_dir }}/bindep/tests/bindep.txt"
+        {{ bindep_profile }}
       register: _bindep_output
       changed_when: false
       failed_when: false
