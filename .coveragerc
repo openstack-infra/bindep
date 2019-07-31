@@ -1,6 +1,0 @@
-[run]
-branch = True
-source = bindep
-
-[report]
-ignore_errors = True
